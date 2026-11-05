@@ -31,7 +31,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { Navigate } from "react-router-dom"
-import { MSG, rutaDeRol } from "../../features/auth/logic"
+import { MSG, calcularAvisoMs, rutaDeRol } from "../../features/auth/logic"
 import { api, mensajeDe, renovarUnaVez } from "../../shared/api"
 import { useApp } from "../../app/providers"
 import { Modal, btnGhost, btnPrimary } from "./kit"
@@ -107,8 +107,8 @@ const LABELS: Record<string, string> = {
   cuenta: "Mi cuenta",
 }
 
-const IDLE_MS = 15 * 60_000
-const WARN_MS = 2 * 60_000
+const DEFAULT_IDLE_MIN = 15
+const DEFAULT_WARN_MIN = 2
 
 export function PanelShell({ children }: { children: ReactNode }) {
   const { sesion, salir, avisar } = useApp()
@@ -116,6 +116,10 @@ export function PanelShell({ children }: { children: ReactNode }) {
   const { pathname: path } = useLocation()
   const [open, setOpen] = useState(false)
   const [warn, setWarn] = useState(false)
+  const idleMsRef = useRef(DEFAULT_IDLE_MIN * 60_000)
+  const warnMsRef = useRef(DEFAULT_WARN_MIN * 60_000)
+  const warnTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const logoutTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem("panel-collapsed") === "1"
@@ -134,7 +138,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
       return !c
     })
 
-  const cerrarSesion = useCallback(async (mensajeOk = MSG.logout) => {
+  const cerrarSesion = useCallback(async (mensajeOk: string = MSG.logout) => {
     try {
       const respuesta = await api("/api/v1/auth/logout", { method: "POST", body: "{}" }, false)
       const texto = await mensajeDe(respuesta)
@@ -149,6 +153,19 @@ export function PanelShell({ children }: { children: ReactNode }) {
     navigate("/login", { replace: true })
   }, [avisar, navigate, salir])
 
+  const programarInactividad = useCallback(() => {
+    clearTimeout(warnTimerRef.current)
+    clearTimeout(logoutTimerRef.current)
+    const avisoEn = calcularAvisoMs(idleMsRef.current / 60_000, warnMsRef.current / 60_000)
+    warnTimerRef.current = setTimeout(() => setWarn(true), avisoEn)
+    logoutTimerRef.current = setTimeout(() => void cerrarSesion(MSG.inactividad), idleMsRef.current)
+  }, [cerrarSesion])
+
+  const registrarActividad = useCallback(() => {
+    setWarn(false)
+    programarInactividad()
+  }, [programarInactividad])
+
   const continuar = async () => {
     const ok = await renovarUnaVez()
     if (!ok) {
@@ -157,7 +174,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
       navigate("/login", { replace: true })
       return
     }
-    setWarn(false)
+    registrarActividad()
     avisar(MSG.continua)
   }
 
@@ -168,26 +185,40 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!sesion) return
-    let warnT: ReturnType<typeof setTimeout>
-    let outT: ReturnType<typeof setTimeout>
-    const reset = () => {
-      clearTimeout(warnT)
-      clearTimeout(outT)
-      warnT = setTimeout(() => setWarn(true), IDLE_MS - WARN_MS)
-      outT = setTimeout(() => void cerrarSesion(), IDLE_MS)
-    }
-    const evs = ["pointerdown", "keydown", "scroll"] as const
-    const on = () => {
-      if (!warn) reset()
-    }
-    reset()
-    evs.forEach((e) => window.addEventListener(e, on, { passive: true }))
+    let cancelado = false
+    void (async () => {
+      try {
+        const respuesta = await api("/api/v1/auth/politica-sesion")
+        if (!respuesta.ok || cancelado) return
+        const data = (await respuesta.json()) as { inactividad_minutos?: number; aviso_minutos?: number }
+        if (typeof data.inactividad_minutos === "number" && data.inactividad_minutos > 0) {
+          idleMsRef.current = data.inactividad_minutos * 60_000
+        }
+        if (typeof data.aviso_minutos === "number" && data.aviso_minutos >= 0) {
+          warnMsRef.current = data.aviso_minutos * 60_000
+        }
+        if (!cancelado) programarInactividad()
+      } catch {
+        if (!cancelado) programarInactividad()
+      }
+    })()
     return () => {
-      clearTimeout(warnT)
-      clearTimeout(outT)
+      cancelado = true
+    }
+  }, [sesion, programarInactividad])
+
+  useEffect(() => {
+    if (!sesion) return
+    const evs = ["pointerdown", "keydown", "scroll"] as const
+    const on = () => registrarActividad()
+    evs.forEach((e) => window.addEventListener(e, on, { passive: true }))
+    programarInactividad()
+    return () => {
+      clearTimeout(warnTimerRef.current)
+      clearTimeout(logoutTimerRef.current)
       evs.forEach((e) => window.removeEventListener(e, on))
     }
-  }, [sesion, warn, cerrarSesion])
+  }, [sesion, registrarActividad, programarInactividad])
 
   if (!sesion) return <Navigate to="/login" replace />
   if (sesion.debeCambiarPassword) return <Navigate to="/cambiar-contrasena" replace />
@@ -196,7 +227,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
   const base = rutaDeRol(sesion.rol)
   const items = [
     ...ORDER.map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
-    { key: "cuenta", label: LABELS.cuenta, href: `${base}/cuenta` },
+    { key: "cuenta", label: LABELS.cuenta, href: "/cambiar-contrasena" },
   ]
   const user = { name: sesion.nombre, role: sesion.rol.toLowerCase() }
 

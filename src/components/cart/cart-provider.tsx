@@ -47,7 +47,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (ready) localStorage.setItem(KEY, JSON.stringify(lines))
+    if (!ready) return
+    try {
+      localStorage.setItem(KEY, JSON.stringify(lines))
+    } catch {
+      /* quota, modo privado o storage bloqueado: el carrito sigue en memoria */
+    }
   }, [lines, ready])
 
   const add = useCallback((l: Omit<CartLine, 'quantity' | 'key'>, q = 1) => {

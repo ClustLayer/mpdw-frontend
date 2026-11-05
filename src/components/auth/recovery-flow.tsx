@@ -1,6 +1,6 @@
 import { useEffect, useState, useTransition } from "react"
-import { Eye, EyeOff, Loader2, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react"
-import { MSG, correoValido, passwordCumplePolitica } from "../../features/auth/logic"
+import { Loader2, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react"
+import { MSG, correoValido } from "../../features/auth/logic"
 import { api, mensajeDe } from "../../shared/api"
 
 const field = "mt-2 w-full rounded-xl border-2 border-plum/15 bg-white px-4 py-3.5 text-ink outline-none transition focus:border-cyan"
@@ -9,12 +9,8 @@ const primary =
 const COOLDOWN = 60
 
 export function RecoveryFlow({ onDone, onBack }: { onDone: (msg: string, email: string) => void; onBack: () => void }) {
-  const [step, setStep] = useState<1 | 2>(1)
   const [email, setEmail] = useState("")
-  const [code, setCode] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirm, setConfirm] = useState("")
-  const [show, setShow] = useState(false)
+  const [sent, setSent] = useState(false)
   const [error, setError] = useState("")
   const [info, setInfo] = useState("")
   const [cool, setCool] = useState(0)
@@ -33,118 +29,77 @@ export function RecoveryFlow({ onDone, onBack }: { onDone: (msg: string, email: 
       return
     }
     start(async () => {
-      const respuesta = await api("/api/v1/auth/recuperar", { method: "POST", body: JSON.stringify({ email: email.trim() }) }, false)
-      const texto = await mensajeDe(respuesta)
-      if (!respuesta.ok) return setError(texto || MSG.errorSolicitud)
-      setInfo(texto || MSG.recuperacion)
-      setCool(COOLDOWN)
-      if (!resend) setStep(2)
-    })
-  }
-
-  const submitReset = () => {
-    setError("")
-    if (!passwordCumplePolitica(password)) return setError(MSG.politica)
-    if (password !== confirm) return setError(MSG.noCoinciden)
-    start(async () => {
-      const respuesta = await api(
-        "/api/v1/auth/restablecer",
-        { method: "POST", body: JSON.stringify({ token: code, password, confirmar: confirm }) },
-        false,
-      )
-      const texto = await mensajeDe(respuesta)
-      if (!respuesta.ok) return setError(texto || MSG.errorSolicitud)
-      onDone(texto || MSG.resetOk, email)
+      try {
+        const respuesta = await api("/api/v1/auth/recuperar", { method: "POST", body: JSON.stringify({ email: email.trim() }) }, false)
+        const texto = await mensajeDe(respuesta)
+        if (!respuesta.ok) {
+          setError(texto || MSG.errorSolicitud)
+          return
+        }
+        const mensaje = texto || MSG.recuperacion
+        setInfo(mensaje)
+        setCool(COOLDOWN)
+        if (!resend) onDone(mensaje, email.trim())
+        setSent(true)
+      } catch {
+        setError(MSG.errorSolicitud)
+      }
     })
   }
 
   return (
     <div className="w-full max-w-md">
-      <p className="text-sm font-bold uppercase tracking-widest text-brand">
-        Recuperar acceso · Paso {step} de 2
-      </p>
-      <h1 className="mt-2 font-display text-4xl font-extrabold text-plum">{step === 1 ? "¿Olvidaste tu contraseña?" : "Crea una nueva contraseña"}</h1>
+      <p className="text-sm font-bold uppercase tracking-widest text-brand">Recuperar acceso</p>
+      <h1 className="mt-2 font-display text-4xl font-extrabold text-plum">¿Olvidaste tu contraseña?</h1>
       <p className="mt-2 text-sm text-ink/60">
-        {step === 1 ? "Escribe tu correo y te enviaremos un código de 6 dígitos." : `Ingresa el código que enviamos a ${email} y elige tu nueva contraseña.`}
+        Escribe tu correo y te enviaremos un enlace seguro. Ábrelo en el navegador y completa el restablecimiento en la página de nueva contraseña (el token viaja en el enlace, no es un código de 6 dígitos).
       </p>
       {error && (
         <p role="alert" className="mt-6 flex items-start gap-2 rounded-xl border-2 border-brand bg-brand/5 p-3 text-sm font-medium text-brand-dark">
           <AlertTriangle size={18} className="mt-0.5 shrink-0" /> {error}
         </p>
       )}
-      {step === 2 && info && (
+      {(sent || info) && (
         <p role="status" className="mt-6 flex items-start gap-2 rounded-xl border-2 border-cyan bg-cyan/5 p-3 text-sm font-medium text-plum">
-          <CheckCircle2 size={18} className="mt-0.5 shrink-0" /> {info}
+          <CheckCircle2 size={18} className="mt-0.5 shrink-0" /> {info || MSG.recuperacion}
         </p>
       )}
 
-      {step === 1 ? (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            send()
-          }}
-          noValidate
-        >
-          <label className="mt-7 block text-sm font-semibold">
-            Correo electrónico
-            <input value={email} onChange={(e) => setEmail(e.target.value)} name="email" type="email" autoComplete="username" required className={field} />
-          </label>
-          <button disabled={pending} title="Enviar código" aria-label="Enviar código de recuperación" className={primary}>
-            {pending && <Loader2 size={18} className="animate-spin" />} Enviar código
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          send()
+        }}
+        noValidate
+      >
+        <label className="mt-7 block text-sm font-semibold">
+          Correo electrónico
+          <input value={email} onChange={(e) => setEmail(e.target.value)} name="email" type="email" autoComplete="username" required className={field} />
+        </label>
+        <button disabled={pending} title="Enviar enlace" aria-label="Enviar enlace de recuperación" className={primary}>
+          {pending && <Loader2 size={18} className="animate-spin" />} Enviar enlace
+        </button>
+        {sent && (
+          <button
+            type="button"
+            disabled={pending || cool > 0}
+            onClick={() => send(true)}
+            title="Reenviar enlace"
+            aria-label="Reenviar enlace de recuperación"
+            className="mt-4 w-full rounded-xl border-2 border-plum/15 px-5 py-3 text-sm font-bold text-plum transition hover:bg-plum-soft disabled:opacity-60"
+          >
+            {cool > 0 ? `Reenviar enlace en ${cool} s` : "Reenviar enlace"}
           </button>
-        </form>
-      ) : (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            submitReset()
-          }}
-          noValidate
-        >
-          <label className="mt-7 block text-sm font-semibold">
-            Código de 6 dígitos
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              name="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              required
-              className={`${field} tracking-[0.5em]`}
-            />
-          </label>
-          <label className="mt-5 block text-sm font-semibold">
-            Nueva contraseña
-            <span className="relative block">
-              <input value={password} onChange={(e) => setPassword(e.target.value)} name="password" type={show ? "text" : "password"} autoComplete="new-password" required className={`${field} pr-12`} />
-              <button type="button" title={show ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShow((s) => !s)} aria-label={show ? "Ocultar contraseña" : "Mostrar contraseña"} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-plum/70 hover:bg-plum-soft">
-                {show ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </span>
-            <span className="mt-1 block text-xs font-normal text-ink/50">Mínimo 8 caracteres, con letras y números.</span>
-          </label>
-          <label className="mt-5 block text-sm font-semibold">
-            Confirmar contraseña
-            <input value={confirm} onChange={(e) => setConfirm(e.target.value)} name="confirm" type={show ? "text" : "password"} autoComplete="new-password" required className={field} />
-          </label>
-          <button disabled={pending} title="Restablecer contraseña" aria-label="Restablecer contraseña" className={primary}>
-            {pending && <Loader2 size={18} className="animate-spin" />} Restablecer contraseña
-          </button>
-          <button type="button" disabled={pending || cool > 0} onClick={() => send(true)} title="Reenviar código" aria-label="Reenviar código" className="mt-4 w-full rounded-xl border-2 border-plum/15 px-5 py-3 text-sm font-bold text-plum transition hover:bg-plum-soft disabled:opacity-60">
-            {cool > 0 ? `Reenviar código en ${cool} s` : "Reenviar código"}
-          </button>
-        </form>
-      )}
+        )}
+      </form>
       <button
         type="button"
-        onClick={step === 2 ? () => { setStep(1); setError("") } : onBack}
-        title={step === 2 ? "Cambiar correo" : "Volver a iniciar sesión"}
-        aria-label={step === 2 ? "Cambiar correo" : "Volver a iniciar sesión"}
+        onClick={onBack}
+        title="Volver a iniciar sesión"
+        aria-label="Volver a iniciar sesión"
         className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-plum hover:text-brand"
       >
-        <ArrowLeft size={16} /> {step === 2 ? "Cambiar correo" : "Volver a iniciar sesión"}
+        <ArrowLeft size={16} /> Volver a iniciar sesión
       </button>
     </div>
   )

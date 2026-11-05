@@ -36,6 +36,15 @@ export function SiteHeader({ whatsapp }: { whatsapp: string }) {
     }
   }, [open])
 
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 64rem)')
+    const onChange = () => {
+      if (mq.matches) setOpen(false)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
   const active = (h: string) => (h === '/' ? path === '/' : path.startsWith(h))
 
   return (

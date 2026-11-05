@@ -30,6 +30,7 @@ export function LoginForm() {
         onDone={(msg, mail) => {
           setSuccess(msg)
           setPrefill(mail)
+          setEmail(mail)
           setRecovering(false)
         }}
       />
@@ -105,7 +106,7 @@ export function LoginForm() {
       )}
       <label className="mt-7 block text-sm font-semibold">
         Correo electrónico
-        <input name="email" type="email" value={email || prefill} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required className={field} />
+        <input name="email" type="email" value={email || prefill} onChange={(e) => { setEmail(e.target.value); setPrefill("") }} autoComplete="username" required className={field} />
       </label>
       <label className="mt-5 block text-sm font-semibold">
         Contraseña
