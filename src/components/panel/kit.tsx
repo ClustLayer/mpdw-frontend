@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react"
+import { toast } from "../../features/en-desarrollo"
+
 export function Modal({
   open,
   onClose,
@@ -14,6 +16,7 @@ export function Modal({
   wide?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
+  const headingId = useId()
   useEffect(() => {
     const d = ref.current
     if (!d) return
@@ -24,14 +27,16 @@ export function Modal({
     <dialog
       ref={ref}
       onClose={onClose}
-      onClick={(e) => e.target === ref.current && onClose()}
-      aria-labelledby="modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+      aria-labelledby={headingId}
       className={`m-auto w-[calc(100%-2rem)] ${wide ? "max-w-2xl" : "max-w-md"} rounded-2xl border-2 border-plum bg-white p-0 text-ink shadow-[8px_8px_0_0_var(--color-plum)] backdrop:bg-plum/50 backdrop:backdrop-blur-sm`}
     >
       {open && (
         <div className="max-h-[85dvh] overflow-y-auto p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
-            <h2 id="modal-title" className="font-display text-2xl font-extrabold text-plum">
+            <h2 id={headingId} className="font-display text-2xl font-extrabold text-plum">
               {title}
             </h2>
             <button type="button" onClick={onClose} aria-label="Cerrar" className="rounded-lg p-1.5 hover:bg-plum-soft">
@@ -110,6 +115,9 @@ export function useDo() {
     try {
       await accion()
       despues?.()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : ""
+      if (msg) toast(msg)
     } finally {
       setPending(false)
     }

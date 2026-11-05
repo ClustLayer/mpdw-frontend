@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-05 — Deuda tecnica Copilot (Epic 2)
+
+- Listado de usuarios: cancelacion logica de peticiones obsoletas, clamp de pagina y errores de red.
+- Modal de edicion: carga segura sin datos cruzados; contraseña temporal sin doble lectura del body.
+- Kit: `useId` en modales, cierre de backdrop seguro y errores visibles en `useDo`.
+
 ## 2026-11-05 — Correccion Mi perfil (demo) y notificaciones
 
 - Pantalla Mi perfil con layout de la demo (datos personales + cambio de contraseña en panel).

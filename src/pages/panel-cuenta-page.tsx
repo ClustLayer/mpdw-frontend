@@ -31,27 +31,32 @@ export function PanelCuentaPage() {
 
   useEffect(() => {
     void (async () => {
-      const resp = await api("/api/v1/auth/profile")
-      if (!resp.ok) {
+      try {
+        const resp = await api("/api/v1/auth/profile")
+        if (!resp.ok) {
+          setError(MSG.perfilError)
+          toast(MSG.perfilError)
+          return
+        }
+        const data = (await resp.json()) as Perfil
+        setPerfil({
+          nombre: data.nombre,
+          apellido: data.apellido ?? "",
+          telefono: data.telefono ?? "",
+          email: data.email,
+          documento: data.documento,
+          rol_nombre: data.rol_nombre,
+          tipo_sangre: data.tipo_sangre ?? "",
+          fecha_nacimiento: data.fecha_nacimiento ? String(data.fecha_nacimiento).slice(0, 10) : "",
+          direccion: data.direccion ?? "",
+          contacto_emergencia_nombre: data.contacto_emergencia_nombre ?? "",
+          contacto_emergencia_telefono: data.contacto_emergencia_telefono ?? "",
+        })
+        setNombreCompleto(unirNombreCompleto(data.nombre, data.apellido ?? ""))
+      } catch {
         setError(MSG.perfilError)
         toast(MSG.perfilError)
-        return
       }
-      const data = (await resp.json()) as Perfil
-      setPerfil({
-        nombre: data.nombre,
-        apellido: data.apellido ?? "",
-        telefono: data.telefono ?? "",
-        email: data.email,
-        documento: data.documento,
-        rol_nombre: data.rol_nombre,
-        tipo_sangre: data.tipo_sangre ?? "",
-        fecha_nacimiento: data.fecha_nacimiento ? String(data.fecha_nacimiento).slice(0, 10) : "",
-        direccion: data.direccion ?? "",
-        contacto_emergencia_nombre: data.contacto_emergencia_nombre ?? "",
-        contacto_emergencia_telefono: data.contacto_emergencia_telefono ?? "",
-      })
-      setNombreCompleto(unirNombreCompleto(data.nombre, data.apellido ?? ""))
     })()
   }, [])
 

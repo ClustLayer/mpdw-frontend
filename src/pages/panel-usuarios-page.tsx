@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, Pencil, Plus, Search } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 import {
@@ -50,6 +50,7 @@ export function PanelUsuariosPage() {
   const [confirmEstado, setConfirmEstado] = useState<{ id: number; accion: string; nombre: string } | null>(null)
   const [elegirEstado, setElegirEstado] = useState<{ id: number; nombre: string; estado: string } | null>(null)
   const { run, pending } = useDo()
+  const cargaSeq = useRef(0)
 
   const pageSize = 20
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -64,6 +65,7 @@ export function PanelUsuariosPage() {
   }, [debouncedQ, estado, idRol, page, setParams])
 
   const cargar = useCallback(async () => {
+    const seq = ++cargaSeq.current
     setError("")
     const qs = new URLSearchParams()
     if (debouncedQ.trim()) qs.set("q", debouncedQ.trim())
@@ -71,17 +73,29 @@ export function PanelUsuariosPage() {
     if (idRol) qs.set("id_rol", idRol)
     qs.set("page", String(page))
     qs.set("page_size", String(pageSize))
-    const resp = await api(`/api/v1/usuarios/?${qs.toString()}`)
-    if (!resp.ok) {
+    try {
+      const resp = await api(`/api/v1/usuarios/?${qs.toString()}`)
+      if (seq !== cargaSeq.current) return
+      if (!resp.ok) {
+        setError(MSG.listadoError)
+        setItems([])
+        setTotal(0)
+        setMensaje("")
+        return
+      }
+      const data = (await resp.json()) as { items: Fila[]; total: number; mensaje: string }
+      setItems(data.items)
+      setTotal(data.total)
+      setMensaje(data.mensaje)
+      const maxPage = Math.max(1, Math.ceil(data.total / pageSize))
+      setPage((current) => Math.min(current, maxPage))
+    } catch {
+      if (seq !== cargaSeq.current) return
       setError(MSG.listadoError)
       setItems([])
       setTotal(0)
-      return
+      setMensaje("")
     }
-    const data = (await resp.json()) as { items: Fila[]; total: number; mensaje: string }
-    setItems(data.items)
-    setTotal(data.total)
-    setMensaje(data.mensaje)
   }, [debouncedQ, estado, idRol, page])
 
   useEffect(() => {
@@ -275,6 +289,8 @@ function UsuarioFormModal({
   const [confirmTemp, setConfirmTemp] = useState(false)
   const [tempClave, setTempClave] = useState<string | null>(null)
   const [error, setError] = useState("")
+  const [detalleListo, setDetalleListo] = useState(false)
+  const idCargaRef = useRef<number | null>(null)
   const { run, pending } = useDo()
 
   useEffect(() => {
@@ -282,27 +298,49 @@ function UsuarioFormModal({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset al abrir modal
     setError("")
     if (isNew) {
+      setDetalleListo(true)
       setNombre(""); setApellido(""); setDocumento(""); setTelefono(""); setEmail("")
       setIdRol(roles[0] ? String(roles[0].id_rol) : "")
       setIdSede(sedes[0] ? String(sedes[0].id_sede) : "")
       return
     }
+    setDetalleListo(false)
+    setNombre("")
+    setApellido("")
+    setDocumento("")
+    setTelefono("")
+    setEmail("")
+    setIdRol("")
+    setIdSede("")
+    const cargarId = id as number
+    idCargaRef.current = cargarId
     void (async () => {
-      const resp = await api(`/api/v1/usuarios/${id}`)
-      if (!resp.ok) return
-      const u = (await resp.json()) as Record<string, unknown>
-      setNombre(String(u.nombre ?? ""))
-      setApellido(String(u.apellido ?? ""))
-      setDocumento(String(u.documento ?? ""))
-      setTelefono(String(u.telefono ?? ""))
-      setEmail(String(u.email ?? ""))
-      const rol = String(u.id_rol ?? "")
-      setIdRol(rol)
-      setRolInicial(rol)
-      const sede = (u.sedes as { id_sede: number; es_principal: boolean }[] | undefined)?.find((s) => s.es_principal)
-      setIdSede(sede ? String(sede.id_sede) : "")
-      setVersion(Number(u.version_fila ?? 1))
-      setPuedeTemp(Boolean(u.puede_contrasena_temporal))
+      try {
+        const resp = await api(`/api/v1/usuarios/${cargarId}`)
+        if (idCargaRef.current !== cargarId) return
+        if (!resp.ok) {
+          setError(MSG.actualizarError)
+          return
+        }
+        const u = (await resp.json()) as Record<string, unknown>
+        if (idCargaRef.current !== cargarId) return
+        setNombre(String(u.nombre ?? ""))
+        setApellido(String(u.apellido ?? ""))
+        setDocumento(String(u.documento ?? ""))
+        setTelefono(String(u.telefono ?? ""))
+        setEmail(String(u.email ?? ""))
+        const rol = String(u.id_rol ?? "")
+        setIdRol(rol)
+        setRolInicial(rol)
+        const sede = (u.sedes as { id_sede: number; es_principal: boolean }[] | undefined)?.find((s) => s.es_principal)
+        setIdSede(sede ? String(sede.id_sede) : "")
+        setVersion(Number(u.version_fila ?? 1))
+        setPuedeTemp(Boolean(u.puede_contrasena_temporal))
+        setDetalleListo(true)
+      } catch {
+        if (idCargaRef.current !== cargarId) return
+        setError(MSG.actualizarError)
+      }
     })()
   }, [open, id, isNew, roles, sedes])
 
@@ -350,9 +388,10 @@ function UsuarioFormModal({
     run(async () => {
       if (!id) return
       const resp = await api(`/api/v1/usuarios/${id}/contrasena-temporal`, { method: "POST" })
-      const msg = await mensajeDe(resp)
       if (!resp.ok) {
+        const msg = await mensajeDe(resp)
         setError(msg || MSG.contrasenaTempError)
+        toast(msg || MSG.contrasenaTempError)
         return
       }
       const body = (await resp.json()) as { contrasena_temporal?: string; mensaje?: string }
@@ -421,7 +460,7 @@ function UsuarioFormModal({
         )}
         <div className="mt-2 flex justify-end gap-3 sm:col-span-2">
           <button type="button" onClick={onClose} className={btnGhost}>Cancelar</button>
-          <button type="submit" disabled={!puedeGuardar || pending} className={btnPrimary}>
+          <button type="submit" disabled={!puedeGuardar || pending || !detalleListo} className={btnPrimary}>
             {pending && <Loader2 size={16} className="animate-spin" aria-hidden />}
             {isNew ? "Crear usuario" : "Guardar cambios"}
           </button>
