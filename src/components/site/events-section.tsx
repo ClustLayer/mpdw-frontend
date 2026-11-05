@@ -14,7 +14,7 @@ export function EventsSection({ events, today: serverToday }: { events: PublicEv
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 md:px-10" aria-labelledby="eventos">
       <Reveal>
-        <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Pasa por la tienda</p>
+        <p className="kicker">Pasa por la tienda</p>
         <h2 id="eventos" className="mt-2 font-display text-4xl font-extrabold text-plum md:text-5xl">Eventos</h2>
       </Reveal>
       {!events.length ? (

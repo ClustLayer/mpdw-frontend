@@ -95,7 +95,7 @@ export function HomePage() {
       <section className="bg-paper py-24" aria-labelledby="deco">
         <div className="mx-auto max-w-7xl px-5 md:px-10">
           <Reveal>
-            <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Marca propia</p>
+            <p className="kicker">Marca propia</p>
             <h2 id="deco" className="mt-2 max-w-3xl font-display text-4xl font-extrabold leading-tight text-plum md:text-5xl">DECO: pintura hecha por nosotros, para Cali</h2>
             <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink/75">En Mundo Pinturas Diana fabricamos DECO, nuestra marca de pinturas. Nuestra fortaleza son los <strong className="text-plum">vinilos</strong>, y también producimos lacas, esmaltes, pintura de tráfico y otros acabados. Además preparamos el color a tu medida con nuestro servicio de mezcla.</p>
           </Reveal>
@@ -127,7 +127,7 @@ export function HomePage() {
           <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Del catálogo</p>
+                <p className="kicker">Del catálogo</p>
                 <h2 id="insignia" className="mt-2 font-display text-4xl font-extrabold text-plum md:text-5xl">Productos insignia</h2>
                 <Squiggle className="mt-3 h-4 w-44" />
               </div>
@@ -186,7 +186,7 @@ export function HomePage() {
           </div>
         </Reveal>
         <Reveal delay={120}>
-          <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Nuestra historia</p>
+          <p className="kicker">Nuestra historia</p>
           <h2 id="historia" className="mt-2 font-display text-4xl font-extrabold leading-tight text-plum md:text-5xl">17 años pintando Cali. Y seguimos.</h2>
           <p className="mt-5 text-lg leading-relaxed text-ink/75">Después de cerca de 17 años en San Nicolás, un terremoto nos obligó a empezar de nuevo en otro lugar. Aquí contamos cómo seguimos adelante.</p>
           <Link to="/sobre-nosotros" className="group mt-7 inline-flex items-center gap-2 rounded-full bg-plum px-6 py-3.5 font-bold text-white transition hover:bg-brand">Conocer la historia <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" aria-hidden /></Link>

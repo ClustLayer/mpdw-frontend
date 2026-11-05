@@ -10,7 +10,8 @@ export function SedesPage() {
   const list: BranchView[] = branches
   const [first, ...rest] = list
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-8 pt-14 md:px-10">
+    <div className="min-h-screen bg-paper">
+      <div className="mx-auto max-w-7xl px-5 pb-8 pt-14 md:px-10">
       <Sticker>Cali, Colombia</Sticker>
       <h1 className="mt-5 font-display text-5xl font-extrabold text-plum md:text-6xl">Sedes y contacto</h1>
       <p className="mt-4 max-w-2xl text-ink/70">Encuentra la sede más cercana, revisa si estamos abiertos hoy y escríbenos por WhatsApp.</p>
@@ -39,6 +40,7 @@ export function SedesPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   )
 }

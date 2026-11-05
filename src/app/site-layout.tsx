@@ -8,7 +8,10 @@ export function SiteLayout() {
   const settings = getSiteSettings()
   return (
     <CartProvider>
-      <a href="#contenido" className="figma-bypass-link">
+      <a
+        href="#contenido"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:font-semibold focus:text-plum focus:shadow-lg"
+      >
         Saltar al contenido
       </a>
       <SiteHeader whatsapp={settings.whatsapp} />

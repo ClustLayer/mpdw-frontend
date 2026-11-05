@@ -14,7 +14,7 @@ export function ProductCarousel({ id, kicker, title, href, products, color = '#0
     <section className="mx-auto max-w-7xl px-5 py-14 md:px-10" aria-labelledby={id}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">{kicker}</p>
+          <p className="kicker">{kicker}</p>
           <h2 id={id} className="mt-2 font-display text-3xl font-extrabold text-plum md:text-4xl">{title}</h2>
           <Squiggle className="mt-3 h-4 w-40" color={color} />
         </div>

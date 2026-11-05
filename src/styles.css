@@ -55,5 +55,19 @@ button, input, select, textarea { font: inherit; }
 }
 
 .figma-custom-code-fragment { display: contents; }
-.figma-bypass-link { position: fixed; top: 8px; left: 8px; z-index: 2147483647; transform: translateY(-150%); border-radius: 6px; background: #111827; color: #fff; padding: 8px 12px; font: 600 14px/1.2 system-ui,sans-serif; text-decoration: none; }
-.figma-bypass-link:focus { transform: translateY(0); }
+.kicker {
+  font-family: var(--nf-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #00788a;
+}
+
+@layer utilities {
+  .bg-paper { background-color: #fffaf4; }
+  .bg-sun { background-color: #ffc93c; }
+  .bg-sun\/30 { background-color: rgb(255 201 60 / 0.3); }
+  .bg-plum-soft { background-color: #f6eef6; }
+  .text-cyan-dark { color: #00788a; }
+}

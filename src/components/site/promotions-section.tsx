@@ -23,7 +23,7 @@ export function PromotionsSection({ promotions, today: serverToday, whatsapp }: 
     <section className="relative overflow-hidden bg-plum-soft py-20" aria-labelledby="promos">
       <div className="mx-auto max-w-7xl px-5 md:px-10">
         <Reveal>
-          <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Hay color en juego</p>
+          <p className="kicker">Hay color en juego</p>
           <h2 id="promos" className="mt-2 font-display text-4xl font-extrabold text-plum md:text-5xl">Promociones y sorteos</h2>
         </Reveal>
 

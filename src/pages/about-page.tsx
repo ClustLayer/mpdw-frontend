@@ -21,7 +21,7 @@ export function AboutPage() {
   ]
   return (
     <>
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden bg-paper">
         <Blob className="absolute -right-20 -top-20 size-[440px] opacity-[.1]" />
         <div className="relative mx-auto max-w-7xl px-5 pb-16 pt-16 md:px-10">
           <Sticker>Sobre nosotros</Sticker>
@@ -34,7 +34,7 @@ export function AboutPage() {
         <Reveal>
           <div className="relative overflow-hidden rounded-[2.5rem] border-2 border-plum bg-white p-8 shadow-[10px_10px_0_0_#E11D74] md:p-14">
             <Star className="absolute right-8 top-8 size-10 animate-float" />
-            <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Nuestra Historia</p>
+            <p className="kicker">Nuestra Historia</p>
             <h2 id="pasion" className="mt-2 max-w-3xl font-display text-3xl font-extrabold leading-tight text-plum md:text-5xl">Pasión por el Color y Raíces Caleñas</h2>
             <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink/75">Más de una década y media transformando fachadas, hogares y proyectos de infraestructura en el Valle del Cauca con precisión cromática, calidez humana y compromiso genuino.</p>
             <p className="mt-6 inline-flex rounded-full bg-plum px-5 py-2.5 font-mono text-xs uppercase tracking-wider text-white">Cali, Colombia · Fundada en 2009 · Sede Centro</p>
@@ -77,7 +77,7 @@ export function AboutPage() {
       <section className="bg-paper py-20" aria-labelledby="emblema">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 md:px-10 lg:grid-cols-2">
           <Reveal>
-            <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Emblema de calidad y compromiso</p>
+            <p className="kicker">Emblema de calidad y compromiso</p>
             <h2 id="emblema" className="mt-2 font-display text-4xl font-extrabold text-plum md:text-5xl">«Los que le ponen color a Cali»</h2>
             <p className="mt-5 text-lg leading-relaxed text-ink/75">Este distintivo representa nuestro compromiso con Cali y con cada persona que confía en nosotros. Trabajamos para ofrecer productos de calidad, asesoría cercana y soluciones de pintura que acompañen cada proyecto, desde las pequeñas mejoras del hogar hasta las iniciativas que llenan de color nuestra ciudad.</p>
             <ul className="mt-6 space-y-3">
@@ -106,7 +106,7 @@ export function AboutPage() {
       <section className="bg-paper py-20" aria-labelledby="diana">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 md:px-10 lg:grid-cols-2">
           <Reveal>
-            <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Quién está al frente</p>
+            <p className="kicker">Quién está al frente</p>
             <h2 id="diana" className="mt-2 font-display text-4xl font-extrabold text-plum md:text-5xl">Diana Ivón Cabrera Marín</h2>
             <p className="mt-4 text-lg leading-relaxed text-ink/75">«[Mensaje de presentación de Diana: aquí irá el saludo que ella quiera compartir con sus clientes, con sus palabras.]»</p>
             <Sticker className="mt-5">Texto reemplazable · pendiente de Diana</Sticker>
