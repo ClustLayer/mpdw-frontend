@@ -104,7 +104,7 @@ const LABELS: Record<string, string> = {
   promociones: "Promociones y sorteos",
   auditoria: "Auditoría",
   analitica: "Analítica",
-  cuenta: "Mi cuenta",
+  cuenta: "Mi perfil",
 }
 
 const DEFAULT_IDLE_MIN = 15

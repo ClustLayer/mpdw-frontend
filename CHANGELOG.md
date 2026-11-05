@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-05 — Correccion Mi perfil (demo) y notificaciones
+
+- Pantalla Mi perfil con layout de la demo (datos personales + cambio de contraseña en panel).
+- Menu unificado como Mi perfil; avisos de funcionalidad en desarrollo via toast (sin `alert`).
+
 ## 2026-11-05 — Epica 2, administracion de usuarios y perfil
 
 - Modulo panel Usuarios alineado con la demo: filtros, tabla, crear/editar y cambiar estado.
