@@ -16,3 +16,15 @@
 - El access token no se escribe en `localStorage`. Se conserva en memoria y el refresh viaja en la cookie del backend.
 - El token de recuperacion se lee del fragmento de la URL, no de la consulta.
 - Los avisos usan el toast del portal. No hay `alert()`.
+
+## Epica 2
+**Status:** COMPLETED
+**Date:** 2026-11-05
+
+### Alcance
+- Panel administrador: modulo Usuarios (HU 07–11) y Mi cuenta (HU 12).
+- UI basada en la demo `MundoPinturasDiana-Demo`; demas modulos del panel sin cambios funcionales.
+
+### Evidencia
+- `npm exec pnpm@10.15.0 run calidad`: lint 0 errores, vitest, build y playwright en verde.
+- `src/features/usuarios/logic.test.ts`: validacion de campos obligatorios.

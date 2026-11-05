@@ -16,3 +16,10 @@
 - `src/app/providers.tsx` — toasts accesibles
 - `src/app/shell.tsx` — navegacion, cierre de sesion y dialogo de inactividad
 - `src/shared` aviso "Funcionalidad en desarrollo" para modulos de otras historias
+
+### Epica 2 — Usuarios y perfil
+- `src/pages/panel-usuarios-page.tsx` — HU 07–11 (listado, formularios, estado, contraseña temporal)
+- `src/pages/panel-cuenta-page.tsx` — HU 12
+- `src/features/usuarios/messages.ts` y `logic.ts` — mensajes literales y validacion de formulario
+- `src/components/panel/kit.tsx` — Confirm, Modal ancho, Pager, useDebounced, Badge
+- Rutas en `auth-secondary-pages.tsx`: segmentos `usuarios` (admin) y `cuenta`
