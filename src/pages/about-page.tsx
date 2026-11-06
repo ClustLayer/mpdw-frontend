@@ -21,7 +21,7 @@ export function AboutPage() {
   ]
   return (
     <>
-      <section className="relative overflow-hidden bg-paper">
+      <section className="relative overflow-hidden">
         <Blob className="absolute -right-20 -top-20 size-[440px] opacity-[.1]" />
         <div className="relative mx-auto max-w-7xl px-5 pb-16 pt-16 md:px-10">
           <Sticker>Sobre nosotros</Sticker>

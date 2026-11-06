@@ -16,6 +16,9 @@ export const MSG = {
   contrasenaTempOk: "Contraseña temporal generada. El usuario deberá cambiarla en su siguiente acceso.",
   contrasenaTempError: "No fue posible generar la contraseña temporal. Intente nuevamente.",
   rolCambio: "Se cambiará el rol del usuario y sus permisos base. ¿Desea continuar?",
+  eliminarConfirm:
+    "¿Eliminar el acceso de este usuario? Se desactivará la cuenta; el historial se conserva. Esta acción queda registrada en auditoría.",
+  eliminarOk: "El usuario fue desactivado correctamente.",
   estadoConfirm: "¿Está seguro de que desea cambiar el estado de este usuario?",
   contrasenaTempConfirm: "Se generará una contraseña temporal y el usuario deberá cambiarla en su siguiente acceso. ¿Desea continuar?",
   perfilOk: "Su perfil ha sido actualizado correctamente.",

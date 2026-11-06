@@ -29,6 +29,20 @@
 - `npm exec pnpm@10.15.0 run calidad`: lint 0 errores, vitest, build y playwright en verde.
 - `src/features/usuarios/logic.test.ts`: validacion de campos obligatorios.
 
+## Iteración 7 — Ajustes Épica 2 y 3
+**Status:** COMPLETED  
+**Date:** 2026-11-05  
+**Rama:** `epica-3-ajustes-y-fixes`
+
+### Alcance
+- Sesión persistente (`sessionStorage`), `AccesosProvider`, guards `puedeAccion` / `puedeModulo`.
+- UI usuarios y permisos (íconos, confirmaciones, filtros).
+- Matriz refresca accesos tras guardar.
+
+### Evidencia
+- `docs/correcciones-iteracion-7.md`, `docs/qa-epic-2.md`, `docs/qa-epic-3.md`.
+- `npx pnpm run calidad` en verde.
+
 ## Epica 3
 **Status:** COMPLETED  
 **Date:** 2026-11-05

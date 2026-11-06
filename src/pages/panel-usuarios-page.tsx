@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Loader2, Pencil, Plus, Search } from "lucide-react"
+import { Loader2, Pencil, Plus, Search, ToggleLeft, Trash2 } from "lucide-react"
+import { useAccesos } from "../features/accesos/accesos-provider"
+import { puedeAccion } from "../features/accesos/logic"
 import { useSearchParams } from "react-router-dom"
 import {
   Badge,
@@ -49,7 +51,16 @@ export function PanelUsuariosPage() {
   const [modal, setModal] = useState<"new" | number | null>(null)
   const [confirmEstado, setConfirmEstado] = useState<{ id: number; accion: string; nombre: string } | null>(null)
   const [elegirEstado, setElegirEstado] = useState<{ id: number; nombre: string; estado: string } | null>(null)
+  const [confirmEliminar, setConfirmEliminar] = useState<{ id: number; nombre: string } | null>(null)
+  const { accionesModulo, puedeModulo } = useAccesos()
+  const accionesUsuarios = accionesModulo("usuarios")
+  const accesoAmplio = accionesUsuarios.length === 0 && puedeModulo("usuarios")
+  const puedeCrear = accesoAmplio || puedeAccion(accionesUsuarios, "T") || puedeAccion(accionesUsuarios, "Crear")
+  const puedeEditar = accesoAmplio || puedeAccion(accionesUsuarios, "T") || puedeAccion(accionesUsuarios, "Editar")
+  const puedeEstado = accesoAmplio || puedeAccion(accionesUsuarios, "T") || puedeAccion(accionesUsuarios, "Cambiar estado")
+  const puedeEliminar = puedeEstado
   const { run, pending } = useDo()
+  const filtroSelect = `${input} !mt-0 w-auto max-w-[12rem] shrink-0`
   const cargaSeq = useRef(0)
 
   const pageSize = 20
@@ -137,27 +148,36 @@ export function PanelUsuariosPage() {
           <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-plum/50" aria-hidden />
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1) }} placeholder="Buscar usuarios…" className={`${input} !mt-0 pl-10`} />
         </label>
-        <select aria-label="Filtro por rol" value={idRol} onChange={(e) => { setIdRol(e.target.value); setPage(1) }} className={`${input} !mt-0 w-44 shrink-0`}>
+        <select aria-label="Filtro por rol" value={idRol} onChange={(e) => { setIdRol(e.target.value); setPage(1) }} className={filtroSelect}>
           <option value="">Todos los roles</option>
           {roles.map((r) => (
             <option key={r.id_rol} value={String(r.id_rol)}>{r.nombre}</option>
           ))}
         </select>
-        <select aria-label="Filtro por estado" value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1) }} className={`${input} !mt-0 w-40 shrink-0`}>
+        <select aria-label="Filtro por estado" value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1) }} className={filtroSelect}>
           <option value="todos">Todos</option>
           <option value="activo">Activo</option>
           <option value="inactivo">Inactivo</option>
           <option value="bloqueado">Bloqueado</option>
         </select>
-        <button type="button" className={`${btnPrimary} shrink-0`} onClick={() => setModal("new")}>
-          <Plus size={16} aria-hidden /> Nuevo usuario
-        </button>
+        {puedeCrear && (
+          <button
+            type="button"
+            className={`${btnPrimary} shrink-0`}
+            data-tip="Abrir formulario de alta de usuario"
+            onClick={() => setModal("new")}
+          >
+            <Plus size={16} aria-hidden /> Nuevo usuario
+          </button>
+        )}
       </div>
 
       {error && (
         <div className="mb-4 rounded-xl border-2 border-brand p-4 text-sm" role="alert">
           <p>{error}</p>
-          <button type="button" className="mt-2 font-bold text-plum" onClick={() => void cargar()}>Reintentar</button>
+          <button type="button" className="mt-2 font-bold text-plum" data-tip="Volver a cargar el listado" onClick={() => void cargar()}>
+            Reintentar
+          </button>
         </div>
       )}
 
@@ -182,17 +202,32 @@ export function PanelUsuariosPage() {
                   <td className="px-4 py-3"><Badge value={u.rol} /></td>
                   <td className="px-4 py-3"><Badge value={u.estado} /></td>
                   <td className="px-4 py-3">{u.ultimo_acceso ? new Date(u.ultimo_acceso).toLocaleString() : "—"}</td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <button type="button" aria-label={`Editar ${u.nombre_completo}`} className="rounded-lg p-2 text-plum hover:bg-plum-soft" onClick={() => irEditar(u.id_usuario)}>
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className="ml-1 rounded-lg px-2 py-1 text-xs font-bold text-cyan-dark hover:bg-plum-soft"
-                      onClick={() => setElegirEstado({ id: u.id_usuario, nombre: u.nombre_completo, estado: u.estado })}
-                    >
-                      Cambiar estado
-                    </button>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    {puedeEditar && (
+                      <button type="button" aria-label={`Editar ${u.nombre_completo}`} className="rounded-lg p-2 text-plum hover:bg-plum-soft" onClick={() => irEditar(u.id_usuario)}>
+                        <Pencil size={16} />
+                      </button>
+                    )}
+                    {puedeEstado && (
+                      <button
+                        type="button"
+                        aria-label={`Cambiar estado de ${u.nombre_completo}`}
+                        className="rounded-lg p-2 text-cyan-dark hover:bg-plum-soft"
+                        onClick={() => setElegirEstado({ id: u.id_usuario, nombre: u.nombre_completo, estado: u.estado })}
+                      >
+                        <ToggleLeft size={16} />
+                      </button>
+                    )}
+                    {puedeEliminar && u.estado === "Activo" && (
+                      <button
+                        type="button"
+                        aria-label={`Eliminar acceso de ${u.nombre_completo}`}
+                        className="rounded-lg p-2 text-brand hover:bg-brand/10"
+                        onClick={() => setConfirmEliminar({ id: u.id_usuario, nombre: u.nombre_completo })}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -253,6 +288,30 @@ export function PanelUsuariosPage() {
             if (!resp.ok) throw new Error(msg || MSG.estadoError)
             toast(msg || MSG.estadoOk)
             setConfirmEstado(null)
+            await cargar()
+          })
+        }
+      />
+
+      <Confirm
+        open={!!confirmEliminar}
+        title="Eliminar usuario"
+        text={MSG.eliminarConfirm}
+        yes="Eliminar"
+        danger
+        busy={pending}
+        onNo={() => setConfirmEliminar(null)}
+        onYes={() =>
+          run(async () => {
+            if (!confirmEliminar) return
+            const resp = await api(`/api/v1/usuarios/${confirmEliminar.id}/estado`, {
+              method: "POST",
+              body: JSON.stringify({ accion: "desactivar" }),
+            })
+            const msg = await mensajeDe(resp)
+            if (!resp.ok) throw new Error(msg || MSG.estadoError)
+            toast(msg || MSG.eliminarOk)
+            setConfirmEliminar(null)
             await cargar()
           })
         }

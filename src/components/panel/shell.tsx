@@ -32,8 +32,9 @@ import {
 } from "lucide-react"
 import { Navigate } from "react-router-dom"
 import { MSG, calcularAvisoMs, rutaDeRol } from "../../features/auth/logic"
-import { useAccesosPanel } from "../../features/accesos/use-accesos-panel"
+import { useAccesos } from "../../features/accesos/accesos-provider"
 import { api, mensajeDe, renovarUnaVez } from "../../shared/api"
+import { GlobalTooltips } from "../ui/global-tooltips"
 import { useApp } from "../../app/providers"
 import { Modal, btnGhost, btnPrimary } from "./kit"
 
@@ -112,7 +113,7 @@ const DEFAULT_IDLE_MIN = 15
 const DEFAULT_WARN_MIN = 2
 
 export function PanelShell({ children }: { children: ReactNode }) {
-  const { sesion, salir, avisar } = useApp()
+  const { sesion, sesionLista, salir, avisar } = useApp()
   const navigate = useNavigate()
   const { pathname: path } = useLocation()
   const [open, setOpen] = useState(false)
@@ -121,7 +122,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
   const warnMsRef = useRef(DEFAULT_WARN_MIN * 60_000)
   const warnTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const { puedeModulo } = useAccesosPanel(!!sesion)
+  const { puedeModulo } = useAccesos()
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem("panel-collapsed") === "1"
@@ -222,13 +223,23 @@ export function PanelShell({ children }: { children: ReactNode }) {
     }
   }, [sesion, registrarActividad, programarInactividad])
 
+  if (!sesionLista) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-paper text-sm font-semibold text-plum">
+        Restaurando sesión…
+      </div>
+    )
+  }
   if (!sesion) return <Navigate to="/login" replace />
   if (sesion.debeCambiarPassword) return <Navigate to="/cambiar-contrasena" replace />
   if (sesion.requiere2fa) return <Navigate to="/verificacion" replace />
 
   const base = rutaDeRol(sesion.rol)
   const items = [
-    ...ORDER.filter((m) => puedeModulo(m)).map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
+    ...ORDER.filter((m) => {
+      if (m === "permisos" && sesion?.rol !== "Administrador") return false
+      return puedeModulo(m)
+    }).map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
     { key: "cuenta", label: LABELS.cuenta, href: `${base}/cuenta` },
   ]
   const user = { name: sesion.nombre, role: sesion.rol.toLowerCase() }
@@ -315,6 +326,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </Modal>
+      <GlobalTooltips />
     </div>
   )
 }

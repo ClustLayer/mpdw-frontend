@@ -19,3 +19,11 @@ El frontend consume `/api/v1/usuarios/*` y `PATCH /api/v1/auth/profile` mostrand
 **Status:** VERIFIED (cliente + contrato)
 
 Consumo de `/api/v1/roles-permisos/*` y `/api/v1/auth/accesos-panel`. Mensajes de error y exito sin reformular. Toasts accesibles (`role="status"`).
+
+## Iteración 7 (2026-11-05)
+**Status:** VERIFIED (pipelines locales)
+
+- Sesión: refresh cookie + token/`profile` en bootstrap; accesos-panel cacheado 60 s en cliente.
+- `DELETE /api/v1/roles-permisos/roles/{id}` integrado en UI con confirmación.
+- Guards front alineados con `acciones_por_modulo` (Sin acceso, Total, alias T/L).
+- Planes QA: `docs/qa-epic-2.md`, `docs/qa-epic-3.md`.

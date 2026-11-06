@@ -54,6 +54,62 @@ const btn = "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.
 export const btnPrimary = `${btn} bg-brand text-white shadow-[3px_3px_0_0_var(--color-plum)] hover:-translate-y-0.5 hover:bg-brand-dark`
 export const btnGhost = `${btn} border-2 border-plum/20 text-plum hover:bg-plum-soft`
 
+export function FieldLabel({
+  label,
+  required,
+  tip,
+  children,
+  className = "",
+}: {
+  label: string
+  required?: boolean
+  tip?: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <label className={`block text-sm font-semibold ${className}`} data-tip={tip}>
+      {label}
+      {required && (
+        <span className="text-brand" aria-hidden>
+          {" "}
+          *
+        </span>
+      )}
+      {children}
+    </label>
+  )
+}
+
+export function DayClosedToggle({
+  closed,
+  onChange,
+  dayLabel,
+}: {
+  closed: boolean
+  onChange: (closed: boolean) => void
+  dayLabel: string
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={closed}
+      aria-label={`${dayLabel}: ${closed ? "cerrado" : "abierto"}`}
+      data-tip={closed ? "Marcar día como abierto" : "Marcar día como cerrado"}
+      onClick={() => onChange(!closed)}
+      className={`inline-flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-bold transition ${
+        closed
+          ? "border-ink/15 bg-ink/5 text-ink/50"
+          : "border-cyan-dark/40 bg-cyan/10 text-cyan-dark shadow-[2px_2px_0_0_var(--color-plum)]"
+      }`}
+    >
+      <span className={`size-2 rounded-full ${closed ? "bg-ink/25" : "bg-cyan-dark"}`} aria-hidden />
+      {closed ? "Cerrado" : "Abierto"}
+    </button>
+  )
+}
+
 export function Confirm({
   open,
   title,
@@ -62,6 +118,7 @@ export function Confirm({
   onYes,
   onNo,
   yes = "Confirmar",
+  danger,
 }: {
   open: boolean
   title: string
@@ -70,6 +127,7 @@ export function Confirm({
   onYes: () => void
   onNo: () => void
   yes?: string
+  danger?: boolean
 }) {
   return (
     <Modal open={open} onClose={onNo} title={title}>
@@ -78,7 +136,12 @@ export function Confirm({
         <button type="button" onClick={onNo} className={btnGhost}>
           Cancelar
         </button>
-        <button type="button" onClick={onYes} disabled={busy} className={btnPrimary}>
+        <button
+          type="button"
+          onClick={onYes}
+          disabled={busy}
+          className={danger ? `${btn} bg-brand text-white hover:opacity-90` : btnPrimary}
+        >
           {busy && <Loader2 size={16} className="animate-spin" aria-hidden />} {yes}
         </button>
       </div>
