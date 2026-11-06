@@ -12,8 +12,10 @@
 
 ### Modules
 - `src/features/auth/logic.ts` — validaciones y mensajes literales
-- `src/shared/api.ts` — cliente HTTP, una sola renovacion ante 401, cookie incluida
-- `src/app/providers.tsx` — toasts accesibles
+- `src/shared/api.ts` — cliente HTTP, token en `sessionStorage`, una sola renovacion ante 401
+- `src/features/auth/session-storage.ts` — persistencia token/sesion para F5
+- `src/features/accesos/` — `AccesosProvider`, `logic.ts` (Total / Sin acceso), cache accesos-panel
+- `src/app/providers.tsx` — bootstrap de sesion, toasts accesibles
 - `src/app/shell.tsx` — navegacion, cierre de sesion y dialogo de inactividad
 - `src/shared` aviso "Funcionalidad en desarrollo" para modulos de otras historias
 

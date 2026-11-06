@@ -29,3 +29,11 @@ La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se mod
 - HU_MPDW_01_17 Matriz — pestaña Matriz (rol / usuario)
 - HU_MPDW_01_18 Menú y rutas — `useAccesosPanel`, `PanelAccesoDenegadoPage`, filtro en `shell.tsx`
 - Deuda UI Ep.2 — filtros de usuarios en una fila y cabecera alineada con la demo en `panel-usuarios-page.tsx`
+
+### Iteración 7 (ajustes, rama `epica-3-ajustes-y-fixes`)
+
+- Persistencia de sesión al recargar (F5) — `session-storage.ts`, bootstrap en `providers.tsx`
+- Navegación panel — `AccesosProvider` + caché; guards en usuarios y rutas secundarias
+- UI usuarios — comboboxes compactos, acciones por ícono, confirmación eliminar/desactivar
+- Épica 3 — eliminar rol custom (`DELETE`), catálogo Sin acceso/Total, refresco accesos tras matriz
+- QA: `docs/qa-epic-2.md`, `docs/qa-epic-3.md`, `docs/correcciones-iteracion-7.md`
