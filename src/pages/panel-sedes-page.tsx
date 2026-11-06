@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useState } from "react"
 import { Loader2, Pencil, Plus, Search } from "lucide-react"
-import { Empty, Modal, Pager, btnGhost, btnPrimary, input, useDebounced, useDo } from "../components/panel/kit"
+import {
+  DayClosedToggle,
+  Empty,
+  FieldLabel,
+  Modal,
+  Pager,
+  btnGhost,
+  btnPrimary,
+  input,
+  useDebounced,
+  useDo,
+} from "../components/panel/kit"
 import { toast } from "../features/en-desarrollo"
 import { api, mensajeDe } from "../shared/api"
 
@@ -15,6 +26,8 @@ type Sede = {
   estado: boolean
   orden: number
   version_fila: number
+  maps_url?: string
+  map_query?: string
   horarios: Horario[]
 }
 
@@ -77,7 +90,12 @@ export function PanelSedesPage() {
           <option value="activo">Activas</option>
           <option value="inactivo">Inactivas</option>
         </select>
-        <button type="button" className={`${btnPrimary} shrink-0`} onClick={() => setModal("new")}>
+        <button
+          type="button"
+          className={`${btnPrimary} shrink-0`}
+          data-tip="Registrar un nuevo punto de venta"
+          onClick={() => setModal("new")}
+        >
           <Plus size={16} aria-hidden /> Nueva sede
         </button>
       </div>
@@ -129,6 +147,8 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
   const [estado, setEstado] = useState(true)
   const [version, setVersion] = useState(1)
   const [horarios, setHorarios] = useState<Horario[]>(horariosVacios)
+  const [mapsUrl, setMapsUrl] = useState("")
+  const [mapQuery, setMapQuery] = useState("")
   const { run, pending } = useDo()
 
   useEffect(() => {
@@ -143,6 +163,8 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
       setOrden(10)
       setEstado(true)
       setHorarios(horariosVacios())
+      setMapsUrl("")
+      setMapQuery("")
       return
     }
     void (async () => {
@@ -159,6 +181,8 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
       setEstado(s.estado)
       setVersion(s.version_fila)
       setHorarios(s.horarios?.length ? s.horarios : horariosVacios())
+      setMapsUrl(s.maps_url ?? "")
+      setMapQuery(s.map_query ?? "")
     })()
   }, [open, id, isNew])
 
@@ -171,6 +195,8 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
         whatsapp,
         ciudad,
         orden,
+        maps_url: mapsUrl,
+        map_query: mapQuery,
         horarios,
         ...(isNew ? {} : { estado, version_fila: version }),
       }
@@ -190,14 +216,36 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
 
   return (
     <Modal open={open} onClose={onClose} title={isNew ? "Crear sede" : "Editar sede"} wide>
-      <label className="block text-sm font-semibold">Nombre<input value={nombre} onChange={(e) => setNombre(e.target.value)} className={input} maxLength={255} /></label>
-      <label className="block text-sm font-semibold">Dirección<input value={direccion} onChange={(e) => setDireccion(e.target.value)} className={input} maxLength={255} /></label>
-      <label className="block text-sm font-semibold">Teléfono<input value={telefono} onChange={(e) => setTelefono(e.target.value)} className={input} /></label>
-      <label className="block text-sm font-semibold">WhatsApp<input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={input} /></label>
-      <label className="block text-sm font-semibold">Ciudad<input value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={input} /></label>
-      <label className="block text-sm font-semibold">Orden en sitio<input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={input} /></label>
+      <FieldLabel label="Nombre" required tip="Nombre comercial de la sede">
+        <input value={nombre} onChange={(e) => setNombre(e.target.value)} className={input} maxLength={255} data-tip="Nombre comercial de la sede" />
+      </FieldLabel>
+      <FieldLabel label="Dirección" required tip="Dirección física para clientes y mapa">
+        <input value={direccion} onChange={(e) => setDireccion(e.target.value)} className={input} maxLength={255} />
+      </FieldLabel>
+      <FieldLabel label="Teléfono" required tip="Formato internacional, ej. +573001234567">
+        <input value={telefono} onChange={(e) => setTelefono(e.target.value)} className={input} />
+      </FieldLabel>
+      <FieldLabel label="WhatsApp (solo dígitos con indicativo)" tip="Contacto para pedidos web de esta sede">
+        <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={input} />
+      </FieldLabel>
+      <FieldLabel label="Ciudad" tip="Ciudad mostrada en el sitio público">
+        <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={input} />
+      </FieldLabel>
+      <FieldLabel
+        label="Ubicación en Google Maps (enlace o enlace de inserción)"
+        tip="Pega el enlace Compartir o Insertar un mapa de Google Maps"
+        className="sm:col-span-2"
+      >
+        <input value={mapsUrl} onChange={(e) => setMapsUrl(e.target.value)} className={input} />
+      </FieldLabel>
+      <FieldLabel label="Texto para el mapa (alternativa)" tip="Si no hay enlace, se usa esta búsqueda en el mapa embebido">
+        <input value={mapQuery} onChange={(e) => setMapQuery(e.target.value)} className={input} maxLength={255} />
+      </FieldLabel>
+      <FieldLabel label="Orden en el sitio" tip="Prioridad en la página Sedes y contacto (menor = primero)">
+        <input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={input} />
+      </FieldLabel>
       {!isNew && (
-        <label className="mt-3 flex items-center gap-2 text-sm font-semibold">
+        <label className="mt-3 flex items-center gap-2 text-sm font-semibold" data-tip="Las sedes inactivas no aparecen en el sitio público">
           <input type="checkbox" checked={estado} onChange={(e) => setEstado(e.target.checked)} /> Sede activa
         </label>
       )}
@@ -209,19 +257,45 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
             return (
               <div key={d.n} className="grid gap-2 sm:grid-cols-[6rem_1fr_1fr_auto] sm:items-center">
                 <span className="text-sm font-semibold">{d.label}</span>
-                <input type="time" value={h.hora_apertura} disabled={h.cerrado} onChange={(e) => setHorarios((prev) => prev.map((x) => (x.dia_semana === d.n ? { ...x, hora_apertura: e.target.value } : x)))} className={input} />
-                <input type="time" value={h.hora_cierre} disabled={h.cerrado} onChange={(e) => setHorarios((prev) => prev.map((x) => (x.dia_semana === d.n ? { ...x, hora_cierre: e.target.value } : x)))} className={input} />
-                <label className="flex items-center gap-2 text-xs font-semibold">
-                  <input type="checkbox" checked={h.cerrado} onChange={(e) => setHorarios((prev) => prev.map((x) => (x.dia_semana === d.n ? { ...x, cerrado: e.target.checked } : x)))} /> Cerrado
-                </label>
+                <input
+                  type="time"
+                  aria-label={`Apertura ${d.label}`}
+                  data-tip={`Hora de apertura ${d.label}`}
+                  value={h.hora_apertura}
+                  disabled={h.cerrado}
+                  onChange={(e) => setHorarios((prev) => prev.map((x) => (x.dia_semana === d.n ? { ...x, hora_apertura: e.target.value } : x)))}
+                  className={input}
+                />
+                <input
+                  type="time"
+                  aria-label={`Cierre ${d.label}`}
+                  data-tip={`Hora de cierre ${d.label}`}
+                  value={h.hora_cierre}
+                  disabled={h.cerrado}
+                  onChange={(e) => setHorarios((prev) => prev.map((x) => (x.dia_semana === d.n ? { ...x, hora_cierre: e.target.value } : x)))}
+                  className={input}
+                />
+                <DayClosedToggle
+                  dayLabel={d.label}
+                  closed={h.cerrado}
+                  onChange={(cerrado) => setHorarios((prev) => prev.map((x) => (x.dia_semana === d.n ? { ...x, cerrado } : x)))}
+                />
               </div>
             )
           })}
         </div>
       </fieldset>
       <div className="mt-6 flex justify-end gap-3">
-        <button type="button" className={btnGhost} onClick={onClose}>Cancelar</button>
-        <button type="button" className={btnPrimary} disabled={pending} onClick={() => void guardar()}>
+        <button type="button" className={btnGhost} data-tip="Descartar cambios" onClick={onClose}>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className={btnPrimary}
+          disabled={pending}
+          data-tip={isNew ? "Validar y crear la sede" : "Guardar cambios en la sede"}
+          onClick={() => void guardar()}
+        >
           {pending ? <Loader2 className="animate-spin" size={16} /> : isNew ? "Crear sede" : "Guardar cambios"}
         </button>
       </div>

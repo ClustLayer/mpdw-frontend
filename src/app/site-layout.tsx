@@ -3,6 +3,7 @@ import { SiteHeader } from "../components/site-header"
 import { SiteFooter } from "../components/site-footer"
 import { CartProvider } from "../components/cart/cart-provider"
 import { getSiteSettings } from "../lib/public-data"
+import { GlobalTooltips } from "../components/ui/global-tooltips"
 
 export function SiteLayout() {
   const settings = getSiteSettings()
@@ -19,6 +20,7 @@ export function SiteLayout() {
         <Outlet />
       </main>
       <SiteFooter settings={settings} />
+      <GlobalTooltips />
     </CartProvider>
   )
 }

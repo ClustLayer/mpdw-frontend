@@ -34,6 +34,7 @@ import { Navigate } from "react-router-dom"
 import { MSG, calcularAvisoMs, rutaDeRol } from "../../features/auth/logic"
 import { useAccesos } from "../../features/accesos/accesos-provider"
 import { api, mensajeDe, renovarUnaVez } from "../../shared/api"
+import { GlobalTooltips } from "../ui/global-tooltips"
 import { useApp } from "../../app/providers"
 import { Modal, btnGhost, btnPrimary } from "./kit"
 
@@ -325,6 +326,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </Modal>
+      <GlobalTooltips />
     </div>
   )
 }

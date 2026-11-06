@@ -161,7 +161,12 @@ export function PanelUsuariosPage() {
           <option value="bloqueado">Bloqueado</option>
         </select>
         {puedeCrear && (
-          <button type="button" className={`${btnPrimary} shrink-0`} onClick={() => setModal("new")}>
+          <button
+            type="button"
+            className={`${btnPrimary} shrink-0`}
+            data-tip="Abrir formulario de alta de usuario"
+            onClick={() => setModal("new")}
+          >
             <Plus size={16} aria-hidden /> Nuevo usuario
           </button>
         )}
@@ -170,7 +175,9 @@ export function PanelUsuariosPage() {
       {error && (
         <div className="mb-4 rounded-xl border-2 border-brand p-4 text-sm" role="alert">
           <p>{error}</p>
-          <button type="button" className="mt-2 font-bold text-plum" onClick={() => void cargar()}>Reintentar</button>
+          <button type="button" className="mt-2 font-bold text-plum" data-tip="Volver a cargar el listado" onClick={() => void cargar()}>
+            Reintentar
+          </button>
         </div>
       )}
 

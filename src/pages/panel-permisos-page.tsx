@@ -13,14 +13,13 @@ import {
   useDo,
 } from "../components/panel/kit"
 import { useAccesos } from "../features/accesos/accesos-provider"
-import { MatrizCarriles } from "../features/roles/matriz-carriles"
+import { MatrizCarriles, aplanarDetalle, type ModuloMatriz } from "../features/roles/matriz-carriles"
 import { MSG_ROLES } from "../features/roles/messages"
 import { toast } from "../features/en-desarrollo"
 import { api, mensajeDe } from "../shared/api"
 
 type Rol = { id_rol: number; nombre: string; descripcion: string; estado: boolean; es_rol_base: boolean; version_fila: number }
 type Permiso = { id_permiso: number; nombre: string; modulo: string; accion: string; descripcion: string; estado: boolean; version_fila: number }
-type MatrizFila = { id_permiso: number; modulo: string; accion: string; nombre: string; permitido: boolean | null; heredado_de_rol?: boolean | null; tiene_excepcion?: boolean }
 
 const TABS = [
   { id: "roles", label: "Roles" },
@@ -481,7 +480,7 @@ function TabMatriz() {
   const [roles, setRoles] = useState<{ id_rol: number; nombre: string }[]>([])
   const [usuarios, setUsuarios] = useState<{ id_usuario: number; label: string }[]>([])
   const [destino, setDestino] = useState("")
-  const [filas, setFilas] = useState<MatrizFila[]>([])
+  const [modulos, setModulos] = useState<ModuloMatriz[]>([])
   const { run, pending } = useDo()
 
   useEffect(() => {
@@ -497,12 +496,12 @@ function TabMatriz() {
 
   const cargarMatriz = useCallback(async () => {
     if (!destino) {
-      setFilas([])
+      setModulos([])
       return
     }
     const qs = new URLSearchParams({ tipo: sub, id_destino: destino })
     const r = await api(`/api/v1/roles-permisos/matriz?${qs}`)
-    if (r.ok) setFilas(((await r.json()) as { filas: MatrizFila[] }).filas)
+    if (r.ok) setModulos(((await r.json()) as { filas: ModuloMatriz[] }).filas)
   }, [destino, sub])
 
   useEffect(() => {
@@ -516,7 +515,9 @@ function TabMatriz() {
         toast(MSG_ROLES.matrizDestino)
         return
       }
-      const cambios = filas.filter((f) => f.permitido !== null).map((f) => ({ id_permiso: f.id_permiso, permitido: !!f.permitido }))
+      const cambios = aplanarDetalle(modulos)
+        .filter((f) => f.permitido !== null)
+        .map((f) => ({ id_permiso: f.id_permiso, permitido: !!f.permitido }))
       const r = await api("/api/v1/roles-permisos/matriz", {
         method: "PUT",
         body: JSON.stringify({ tipo: sub, id_destino: Number(destino), cambios }),
@@ -566,7 +567,7 @@ function TabMatriz() {
       {!destino ? (
         <Empty text={MSG_ROLES.matrizDestino} />
       ) : (
-        <MatrizCarriles filas={filas} onChange={setFilas} />
+        <MatrizCarriles modulos={modulos} onChange={setModulos} />
       )}
       <div className="mt-6 flex justify-end gap-3">
         <button type="button" className={btnGhost} onClick={() => setDestino("")}>Cancelar</button>
