@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react"
 import { Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 import {
-  Badge,
   Confirm,
   Empty,
   Modal,
@@ -14,6 +13,7 @@ import {
   useDo,
 } from "../components/panel/kit"
 import { useAccesos } from "../features/accesos/accesos-provider"
+import { MatrizCarriles } from "../features/roles/matriz-carriles"
 import { MSG_ROLES } from "../features/roles/messages"
 import { toast } from "../features/en-desarrollo"
 import { api, mensajeDe } from "../shared/api"
@@ -510,10 +510,6 @@ function TabMatriz() {
     void cargarMatriz()
   }, [cargarMatriz])
 
-  const toggle = (id_permiso: number, checked: boolean) => {
-    setFilas((prev) => prev.map((f) => (f.id_permiso === id_permiso ? { ...f, permitido: checked, asignado: checked } : f)))
-  }
-
   const guardar = () =>
     run(async () => {
       if (!destino) {
@@ -570,38 +566,7 @@ function TabMatriz() {
       {!destino ? (
         <Empty text={MSG_ROLES.matrizDestino} />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="text-xs uppercase tracking-wider text-plum">
-              <tr>
-                <th className="py-2 pr-4 font-bold">Permiso</th>
-                <th className="px-2 py-2 font-bold">Módulo</th>
-                <th className="px-2 py-2 font-bold">Acción</th>
-                <th className="px-2 py-2 font-bold">Habilitado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-plum/10">
-              {filas.map((f) => (
-                <tr key={f.id_permiso}>
-                  <td className="py-2 pr-4 font-semibold">
-                    {f.nombre}
-                    {f.tiene_excepcion && <Badge value="ajustado" />}
-                  </td>
-                  <td className="px-2 py-2">{f.modulo}</td>
-                  <td className="px-2 py-2">{f.accion}</td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="checkbox"
-                      aria-label={`Permiso ${f.nombre}`}
-                      checked={!!f.permitido}
-                      onChange={(e) => toggle(f.id_permiso, e.target.checked)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <MatrizCarriles filas={filas} onChange={setFilas} />
       )}
       <div className="mt-6 flex justify-end gap-3">
         <button type="button" className={btnGhost} onClick={() => setDestino("")}>Cancelar</button>

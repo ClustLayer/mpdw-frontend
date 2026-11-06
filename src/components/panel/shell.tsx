@@ -235,7 +235,10 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
   const base = rutaDeRol(sesion.rol)
   const items = [
-    ...ORDER.filter((m) => puedeModulo(m)).map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
+    ...ORDER.filter((m) => {
+      if (m === "permisos" && sesion?.rol !== "Administrador") return false
+      return puedeModulo(m)
+    }).map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
     { key: "cuenta", label: LABELS.cuenta, href: `${base}/cuenta` },
   ]
   const user = { name: sesion.nombre, role: sesion.rol.toLowerCase() }

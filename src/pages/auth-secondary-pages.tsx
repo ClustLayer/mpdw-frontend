@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom"
 import { PanelAccesoDenegadoPage } from "./panel-acceso-denegado-page"
 import { PanelCuentaPage } from "./panel-cuenta-page"
 import { PanelPermisosPage } from "./panel-permisos-page"
+import { PanelSedesPage } from "./panel-sedes-page"
 import { PanelUsuariosPage } from "./panel-usuarios-page"
 
 const campo = "mt-2 w-full rounded-xl border-2 border-plum/15 bg-white px-4 py-3.5 text-ink outline-none focus:border-cyan"
@@ -221,7 +222,10 @@ export function PanelModulePage() {
     return <PanelAccesoDenegadoPage />
   }
   if (modulo === "usuarios" && (puedeModulo("usuarios") || accesosError)) return <PanelUsuariosPage />
-  if (modulo === "permisos" && (puedeModulo("permisos") || accesosError)) return <PanelPermisosPage />
+  if (modulo === "permisos" && sesion.rol === "Administrador" && (puedeModulo("permisos") || accesosError)) {
+    return <PanelPermisosPage />
+  }
+  if (modulo === "sedes" && (puedeModulo("sedes") || accesosError)) return <PanelSedesPage />
   if (modulo === "cuenta") return <PanelCuentaPage />
   return (
     <section>

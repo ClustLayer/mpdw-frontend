@@ -37,3 +37,11 @@ La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se mod
 - UI usuarios — comboboxes compactos, acciones por ícono, confirmación eliminar/desactivar
 - Épica 3 — eliminar rol custom (`DELETE`), catálogo Sin acceso/Total, refresco accesos tras matriz
 - QA: `docs/qa-epic-2.md`, `docs/qa-epic-3.md`, `docs/correcciones-iteracion-7.md`
+
+## Epica 4 (2026-11-05) — **Status:** COMPLETED (rama `epica-4-sedes-y-contacto`)
+
+- HU_MPDW_01_19 Crear sede — `panel-sedes-page.tsx`, API `POST /api/v1/sedes/gestion/`
+- HU_MPDW_01_20 Editar / desactivar sede — `PATCH /api/v1/sedes/gestion/{id}/`
+- HU_MPDW_01_21 Consolidado — `GET /api/v1/sedes/consolidado/` (estructura; totales cuando existan datos operativos)
+- HU pública sedes y contacto — `sedes-page.tsx` + `GET /api/v1/branches/`
+- Iteración 8: fixes Copilot épica 3, matriz carriles, permisos demo — `docs/correcciones-iteracion-8.md`, `docs/qa-epic-4.md`
