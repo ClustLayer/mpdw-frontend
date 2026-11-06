@@ -1,6 +1,44 @@
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react"
 import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react"
 import { toast } from "../../features/en-desarrollo"
+
+function useModalA11y(open: boolean, contentRef: RefObject<HTMLDivElement | null>, trapFocus: boolean) {
+  const prevFocus = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    if (!open) return
+    prevFocus.current = document.activeElement as HTMLElement
+    return () => {
+      prevFocus.current?.focus?.()
+    }
+  }, [open])
+  useEffect(() => {
+    if (!open || !trapFocus) return
+    const root = contentRef.current
+    if (!root) return
+    const selectors =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const focusable = () =>
+      Array.from(root.querySelectorAll<HTMLElement>(selectors)).filter((el) => el.offsetParent !== null || el === document.activeElement)
+    const list = focusable()
+    window.setTimeout(() => list[0]?.focus(), 0)
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return
+      const nodes = focusable()
+      if (nodes.length === 0) return
+      const f = nodes[0]
+      const l = nodes[nodes.length - 1]
+      if (e.shiftKey && document.activeElement === f) {
+        e.preventDefault()
+        l.focus()
+      } else if (!e.shiftKey && document.activeElement === l) {
+        e.preventDefault()
+        f.focus()
+      }
+    }
+    root.addEventListener("keydown", onKeyDown)
+    return () => root.removeEventListener("keydown", onKeyDown)
+  }, [open, trapFocus, contentRef])
+}
 
 export function Modal({
   open,
@@ -8,15 +46,19 @@ export function Modal({
   title,
   children,
   wide,
+  trapFocus = false,
 }: {
   open: boolean
   onClose: () => void
   title: string
   children: ReactNode
   wide?: boolean
+  trapFocus?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const headingId = useId()
+  useModalA11y(open, contentRef, trapFocus)
   useEffect(() => {
     const d = ref.current
     if (!d) return
@@ -34,7 +76,7 @@ export function Modal({
       className={`m-auto w-[calc(100%-2rem)] ${wide ? "max-w-2xl" : "max-w-md"} rounded-2xl border-2 border-plum bg-white p-0 text-ink shadow-[8px_8px_0_0_var(--color-plum)] backdrop:bg-plum/50 backdrop:backdrop-blur-sm`}
     >
       {open && (
-        <div className="max-h-[85dvh] overflow-y-auto p-6">
+        <div ref={contentRef} className="max-h-[85dvh] overflow-y-auto p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <h2 id={headingId} className="font-display text-2xl font-extrabold text-plum">
               {title}
@@ -130,7 +172,7 @@ export function Confirm({
   danger?: boolean
 }) {
   return (
-    <Modal open={open} onClose={onNo} title={title}>
+    <Modal open={open} onClose={onNo} title={title} trapFocus>
       <p className="text-sm text-ink/70">{text}</p>
       <div className="mt-6 flex justify-end gap-3">
         <button type="button" onClick={onNo} className={btnGhost}>
@@ -138,11 +180,148 @@ export function Confirm({
         </button>
         <button
           type="button"
-          onClick={onYes}
+          onClick={() => {
+            if (busy) return
+            onYes()
+          }}
           disabled={busy}
+          aria-busy={busy}
           className={danger ? `${btn} bg-brand text-white hover:opacity-90` : btnPrimary}
         >
           {busy && <Loader2 size={16} className="animate-spin" aria-hidden />} {yes}
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+function ConfirmDestructiveDialogBody({
+  recordName,
+  message,
+  motiveRequired,
+  motiveMax = 255,
+  busy,
+  onConfirm,
+  onCancel,
+  yes = "Confirmar",
+  danger,
+}: {
+  recordName: string
+  message: string
+  motiveRequired?: boolean
+  motiveMax?: number
+  busy?: boolean
+  onConfirm: (motive: string) => void
+  onCancel: () => void
+  yes?: string
+  danger?: boolean
+}) {
+  const [motive, setMotive] = useState("")
+  const ok =
+    !motiveRequired || (motive.trim().length > 0 && motive.trim().length <= motiveMax)
+  return (
+    <>
+      <p className="text-sm text-ink/70">
+        {message} <span className="font-bold text-ink">{recordName}</span>
+      </p>
+      {motiveRequired && (
+        <label className="mt-4 block text-sm font-semibold">
+          Motivo
+          <textarea
+            value={motive}
+            maxLength={motiveMax}
+            required
+            rows={3}
+            className={input}
+            aria-required
+            onChange={(e) => setMotive(e.target.value)}
+          />
+          <span className="mt-1 block text-xs text-ink/50">{motive.trim().length}/{motiveMax}</span>
+        </label>
+      )}
+      <div className="mt-6 flex justify-end gap-3">
+        <button type="button" onClick={onCancel} className={btnGhost}>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          disabled={busy || !ok}
+          aria-busy={busy}
+          onClick={() => {
+            if (busy || !ok) return
+            onConfirm(motive.trim())
+          }}
+          className={danger ? `${btn} bg-brand text-white hover:opacity-90` : btnPrimary}
+        >
+          {busy && <Loader2 size={16} className="animate-spin" aria-hidden />} {yes}
+        </button>
+      </div>
+    </>
+  )
+}
+
+export function ConfirmDestructiveDialog({
+  open,
+  title,
+  recordName,
+  message,
+  motiveRequired,
+  motiveMax = 255,
+  busy,
+  onConfirm,
+  onCancel,
+  yes = "Confirmar",
+  danger,
+}: {
+  open: boolean
+  title: string
+  recordName: string
+  message: string
+  motiveRequired?: boolean
+  motiveMax?: number
+  busy?: boolean
+  onConfirm: (motive: string) => void
+  onCancel: () => void
+  yes?: string
+  danger?: boolean
+}) {
+  return (
+    <Modal open={open} onClose={onCancel} title={title} trapFocus>
+      <ConfirmDestructiveDialogBody
+        recordName={recordName}
+        message={message}
+        motiveRequired={motiveRequired}
+        motiveMax={motiveMax}
+        busy={busy}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+        yes={yes}
+        danger={danger}
+      />
+    </Modal>
+  )
+}
+
+export function ConflictDialog({
+  open,
+  onReload,
+  onCancel,
+}: {
+  open: boolean
+  onReload: () => void
+  onCancel: () => void
+}) {
+  return (
+    <Modal open={open} onClose={onCancel} title="Conflicto de edición" trapFocus>
+      <p className="text-sm text-ink/70" role="alert">
+        Este registro fue modificado por otro usuario.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-end gap-3">
+        <button type="button" onClick={onCancel} className={btnGhost}>
+          Cancelar
+        </button>
+        <button type="button" onClick={onReload} className={btnPrimary}>
+          Recargar versión actual
         </button>
       </div>
     </Modal>

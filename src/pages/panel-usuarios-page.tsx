@@ -6,6 +6,8 @@ import { useSearchParams } from "react-router-dom"
 import {
   Badge,
   Confirm,
+  ConfirmDestructiveDialog,
+  ConflictDialog,
   Empty,
   Modal,
   Pager,
@@ -18,7 +20,8 @@ import {
 import { MSG } from "../features/usuarios/messages"
 import { formularioUsuarioCompleto } from "../features/usuarios/logic"
 import { toast } from "../features/en-desarrollo"
-import { api, mensajeDe } from "../shared/api"
+import { MSG_TRANSVERSAL } from "../features/transversal/messages"
+import { api, cuerpoError, mensajeDe } from "../shared/api"
 
 type Fila = {
   id_usuario: number
@@ -271,20 +274,27 @@ export function PanelUsuariosPage() {
         )}
       </Modal>
 
-      <Confirm
+      <ConfirmDestructiveDialog
         open={!!confirmEstado}
         title="Cambiar estado"
-        text={MSG.estadoConfirm}
+        recordName={confirmEstado?.nombre ?? ""}
+        message={MSG.estadoConfirm}
+        motiveRequired
         busy={pending}
-        onNo={() => setConfirmEstado(null)}
-        onYes={() =>
+        onCancel={() => setConfirmEstado(null)}
+        onConfirm={(motivo) =>
           run(async () => {
             if (!confirmEstado) return
             const resp = await api(`/api/v1/usuarios/${confirmEstado.id}/estado`, {
               method: "POST",
-              body: JSON.stringify({ accion: confirmEstado.accion }),
+              body: JSON.stringify({ accion: confirmEstado.accion, motivo }),
             })
-            const msg = await mensajeDe(resp)
+            const err = await cuerpoError(resp)
+            if (resp.status === 403 && err.codigo === "PERMISO_DENEGADO") {
+              toast(MSG_TRANSVERSAL.permisoDenegado)
+              return
+            }
+            const msg = err.mensaje ?? (await mensajeDe(resp))
             if (!resp.ok) throw new Error(msg || MSG.estadoError)
             toast(msg || MSG.estadoOk)
             setConfirmEstado(null)
@@ -293,22 +303,29 @@ export function PanelUsuariosPage() {
         }
       />
 
-      <Confirm
+      <ConfirmDestructiveDialog
         open={!!confirmEliminar}
         title="Eliminar usuario"
-        text={MSG.eliminarConfirm}
+        recordName={confirmEliminar?.nombre ?? ""}
+        message={MSG.eliminarConfirm}
         yes="Eliminar"
         danger
+        motiveRequired
         busy={pending}
-        onNo={() => setConfirmEliminar(null)}
-        onYes={() =>
+        onCancel={() => setConfirmEliminar(null)}
+        onConfirm={(motivo) =>
           run(async () => {
             if (!confirmEliminar) return
             const resp = await api(`/api/v1/usuarios/${confirmEliminar.id}/estado`, {
               method: "POST",
-              body: JSON.stringify({ accion: "desactivar" }),
+              body: JSON.stringify({ accion: "desactivar", motivo }),
             })
-            const msg = await mensajeDe(resp)
+            const err = await cuerpoError(resp)
+            if (resp.status === 403 && err.codigo === "PERMISO_DENEGADO") {
+              toast(MSG_TRANSVERSAL.permisoDenegado)
+              return
+            }
+            const msg = err.mensaje ?? (await mensajeDe(resp))
             if (!resp.ok) throw new Error(msg || MSG.estadoError)
             toast(msg || MSG.eliminarOk)
             setConfirmEliminar(null)
@@ -351,13 +368,36 @@ function UsuarioFormModal({
   const [tempClave, setTempClave] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [detalleListo, setDetalleListo] = useState(false)
+  const [conflicto, setConflicto] = useState(false)
   const idCargaRef = useRef<number | null>(null)
   const { run, pending } = useDo()
+  const draftKey = isNew || !id ? "" : `mpdw_usuario_borrador_${id}`
+
+  const aplicarDetalle = useCallback(
+    (u: Record<string, unknown>, cargarId: number) => {
+      if (idCargaRef.current !== cargarId) return
+      setNombre(String(u.nombre ?? ""))
+      setApellido(String(u.apellido ?? ""))
+      setDocumento(String(u.documento ?? ""))
+      setTelefono(String(u.telefono ?? ""))
+      setEmail(String(u.email ?? ""))
+      const rol = String(u.id_rol ?? "")
+      setIdRol(rol)
+      setRolInicial(rol)
+      const sede = (u.sedes as { id_sede: number; es_principal: boolean }[] | undefined)?.find((s) => s.es_principal)
+      setIdSede(sede ? String(sede.id_sede) : "")
+      setVersion(Number(u.version_fila ?? 1))
+      setPuedeTemp(Boolean(u.puede_contrasena_temporal))
+      setDetalleListo(true)
+    },
+    [],
+  )
 
   useEffect(() => {
     if (!open) return
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset al abrir modal
     setError("")
+    setConflicto(false)
     if (isNew) {
       setDetalleListo(true)
       setNombre(""); setApellido(""); setDocumento(""); setTelefono(""); setEmail("")
@@ -380,30 +420,40 @@ function UsuarioFormModal({
         const resp = await api(`/api/v1/usuarios/${cargarId}`)
         if (idCargaRef.current !== cargarId) return
         if (!resp.ok) {
-          setError(MSG.actualizarError)
+          const err = await cuerpoError(resp)
+          if (resp.status === 404 && err.codigo === "USUARIO_NO_ENCONTRADO") {
+            setError(MSG_TRANSVERSAL.registroNoDisponible)
+            toast(MSG_TRANSVERSAL.registroNoDisponible)
+          } else {
+            setError(MSG.actualizarError)
+          }
           return
         }
         const u = (await resp.json()) as Record<string, unknown>
         if (idCargaRef.current !== cargarId) return
-        setNombre(String(u.nombre ?? ""))
-        setApellido(String(u.apellido ?? ""))
-        setDocumento(String(u.documento ?? ""))
-        setTelefono(String(u.telefono ?? ""))
-        setEmail(String(u.email ?? ""))
-        const rol = String(u.id_rol ?? "")
-        setIdRol(rol)
-        setRolInicial(rol)
-        const sede = (u.sedes as { id_sede: number; es_principal: boolean }[] | undefined)?.find((s) => s.es_principal)
-        setIdSede(sede ? String(sede.id_sede) : "")
-        setVersion(Number(u.version_fila ?? 1))
-        setPuedeTemp(Boolean(u.puede_contrasena_temporal))
-        setDetalleListo(true)
+        try {
+          const raw = sessionStorage.getItem(`mpdw_usuario_borrador_${cargarId}`)
+          if (raw) {
+            const d = JSON.parse(raw) as Record<string, string>
+            setNombre(d.nombre ?? String(u.nombre ?? ""))
+            setApellido(d.apellido ?? String(u.apellido ?? ""))
+            setDocumento(d.documento ?? String(u.documento ?? ""))
+            setTelefono(d.telefono ?? String(u.telefono ?? ""))
+            setEmail(d.email ?? String(u.email ?? ""))
+            setIdRol(d.idRol ?? String(u.id_rol ?? ""))
+            setIdSede(d.idSede ?? "")
+            return
+          }
+        } catch {
+          /* ignore */
+        }
+        aplicarDetalle(u, cargarId)
       } catch {
         if (idCargaRef.current !== cargarId) return
         setError(MSG.actualizarError)
       }
     })()
-  }, [open, id, isNew, roles, sedes])
+  }, [open, id, isNew, roles, sedes, aplicarDetalle])
 
   const puedeGuardar = useMemo(
     () => formularioUsuarioCompleto({ nombre, apellido, documento, email, idRol, idSede }),
@@ -436,10 +486,32 @@ function UsuarioFormModal({
         method: isNew ? "POST" : "PATCH",
         body: JSON.stringify(payload),
       })
-      const msg = await mensajeDe(resp)
+      const errBody = await cuerpoError(resp)
+      const msg = errBody.mensaje ?? (await mensajeDe(resp))
       if (!resp.ok) {
+        if (resp.status === 403 && errBody.codigo === "PERMISO_DENEGADO") {
+          toast(MSG_TRANSVERSAL.permisoDenegado)
+          return
+        }
+        if (!isNew && resp.status === 409 && errBody.codigo === "CONFLICTO_CONCURRENCIA") {
+          try {
+            sessionStorage.setItem(
+              draftKey,
+              JSON.stringify({ nombre, apellido, documento, telefono, email, idRol, idSede }),
+            )
+          } catch {
+            /* ignore */
+          }
+          setConflicto(true)
+          return
+        }
         setError(msg || (isNew ? MSG.crearError : MSG.actualizarError))
         return
+      }
+      try {
+        if (draftKey) sessionStorage.removeItem(draftKey)
+      } catch {
+        /* ignore */
       }
       toast(msg || (isNew ? MSG.crearOk : MSG.actualizarOk))
       onSaved()
@@ -450,7 +522,12 @@ function UsuarioFormModal({
       if (!id) return
       const resp = await api(`/api/v1/usuarios/${id}/contrasena-temporal`, { method: "POST" })
       if (!resp.ok) {
-        const msg = await mensajeDe(resp)
+        const errBody = await cuerpoError(resp)
+        if (resp.status === 403 && errBody.codigo === "PERMISO_DENEGADO") {
+          toast(MSG_TRANSVERSAL.permisoDenegado)
+          return
+        }
+        const msg = errBody.mensaje ?? (await mensajeDe(resp))
         setError(msg || MSG.contrasenaTempError)
         toast(msg || MSG.contrasenaTempError)
         return
@@ -462,6 +539,7 @@ function UsuarioFormModal({
     })
 
   return (
+    <>
     <Modal open={open} onClose={onClose} title={isNew ? "Crear usuario" : "Editar usuario"} wide>
       {error && <p role="alert" className="mb-3 rounded-xl border-2 border-brand p-3 text-sm text-brand-dark">{error}</p>}
       <form
@@ -554,6 +632,27 @@ function UsuarioFormModal({
         </div>
       </Modal>
     </Modal>
+
+    <ConflictDialog
+      open={conflicto}
+      onCancel={() => setConflicto(false)}
+      onReload={() => {
+        if (!id) return
+        setConflicto(false)
+        void (async () => {
+          const cargarId = id
+          const resp = await api(`/api/v1/usuarios/${cargarId}`)
+          if (!resp.ok) {
+            toast(MSG.actualizarError)
+            return
+          }
+          const u = (await resp.json()) as Record<string, unknown>
+          aplicarDetalle(u, cargarId)
+          toast(MSG_TRANSVERSAL.registroRecargado)
+        })()
+      }}
+    />
+    </>
   )
 }
 
