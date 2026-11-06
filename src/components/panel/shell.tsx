@@ -32,6 +32,7 @@ import {
 } from "lucide-react"
 import { Navigate } from "react-router-dom"
 import { MSG, calcularAvisoMs, rutaDeRol } from "../../features/auth/logic"
+import { useAccesosPanel } from "../../features/accesos/use-accesos-panel"
 import { api, mensajeDe, renovarUnaVez } from "../../shared/api"
 import { useApp } from "../../app/providers"
 import { Modal, btnGhost, btnPrimary } from "./kit"
@@ -120,6 +121,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
   const warnMsRef = useRef(DEFAULT_WARN_MIN * 60_000)
   const warnTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const { puedeModulo } = useAccesosPanel(!!sesion)
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem("panel-collapsed") === "1"
@@ -226,7 +228,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
   const base = rutaDeRol(sesion.rol)
   const items = [
-    ...ORDER.map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
+    ...ORDER.filter((m) => puedeModulo(m)).map((m) => ({ key: m, label: LABELS[m], href: m === "resumen" ? base : `${base}/${m}` })),
     { key: "cuenta", label: LABELS.cuenta, href: `${base}/cuenta` },
   ]
   const user = { name: sesion.nombre, role: sesion.rol.toLowerCase() }
