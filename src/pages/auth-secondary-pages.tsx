@@ -4,7 +4,8 @@ import { MSG, passwordCumplePolitica, rutaDeRol, tokenDesdeHash } from "../featu
 import { api, mensajeDe } from "../shared/api"
 import { useApp } from "../app/providers"
 import { EnDesarrolloRecuadro } from "../components/ui/en-desarrollo-recuadro"
-import { useAccesosPanel } from "../features/accesos/use-accesos-panel"
+import { useAccesos } from "../features/accesos/accesos-provider"
+import { useParams } from "react-router-dom"
 import { PanelAccesoDenegadoPage } from "./panel-acceso-denegado-page"
 import { PanelCuentaPage } from "./panel-cuenta-page"
 import { PanelPermisosPage } from "./panel-permisos-page"
@@ -210,15 +211,17 @@ export function CambiarContrasenaPage() {
 }
 
 export function PanelModulePage() {
-  const { sesion } = useApp()
-  const modulo = window.location.pathname.split("/").filter(Boolean).at(-1) ?? "modulo"
-  const { puedeModulo, error: accesosError } = useAccesosPanel(!!sesion)
+  const { sesion, sesionLista } = useApp()
+  const { modulo: moduloParam } = useParams<{ modulo: string }>()
+  const modulo = moduloParam ?? "modulo"
+  const { puedeModulo, error: accesosError } = useAccesos()
+  if (!sesionLista) return null
   if (!sesion) return <Navigate to="/login" replace />
   if (modulo !== "cuenta" && !puedeModulo(modulo) && !accesosError) {
     return <PanelAccesoDenegadoPage />
   }
-  if (modulo === "usuarios" && sesion.rol === "Administrador") return <PanelUsuariosPage />
-  if (modulo === "permisos" && sesion.rol === "Administrador") return <PanelPermisosPage />
+  if (modulo === "usuarios" && (puedeModulo("usuarios") || accesosError)) return <PanelUsuariosPage />
+  if (modulo === "permisos" && (puedeModulo("permisos") || accesosError)) return <PanelPermisosPage />
   if (modulo === "cuenta") return <PanelCuentaPage />
   return (
     <section>

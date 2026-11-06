@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { Loader2, Pencil, Plus, Search } from "lucide-react"
+import { Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 import {
   Badge,
@@ -13,6 +13,7 @@ import {
   useDebounced,
   useDo,
 } from "../components/panel/kit"
+import { useAccesos } from "../features/accesos/accesos-provider"
 import { MSG_ROLES } from "../features/roles/messages"
 import { toast } from "../features/en-desarrollo"
 import { api, mensajeDe } from "../shared/api"
@@ -70,8 +71,9 @@ function TabRoles() {
   const [q, setQ] = useState("")
   const debouncedQ = useDebounced(q, 300)
   const [modal, setModal] = useState<"new" | number | null>(null)
+  const [confirmDel, setConfirmDel] = useState<Rol | null>(null)
   const [error, setError] = useState("")
-  const { pending } = useDo()
+  const { run, pending } = useDo()
 
   const cargar = useCallback(async () => {
     setError("")
@@ -132,10 +134,30 @@ function TabRoles() {
                   <td className="px-4 py-3 text-ink/70">{r.descripcion || "—"}</td>
                   <td className="px-4 py-3">{r.estado ? <span className="font-bold text-cyan-dark">Activo</span> : <span className="text-ink/40">Inactivo</span>}</td>
                   <td className="px-4 py-3">{r.es_rol_base ? "Sí" : "No"}</td>
-                  <td className="px-4 py-3">
-                    <button type="button" className={btnGhost} onClick={() => setModal(r.id_rol)} disabled={pending}>
-                      <Pencil size={16} /> Editar
-                    </button>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    {!r.es_rol_base && (
+                      <>
+                        <button
+                          type="button"
+                          aria-label={`Editar rol ${r.nombre}`}
+                          className="rounded-lg p-2 text-plum hover:bg-plum-soft"
+                          onClick={() => setModal(r.id_rol)}
+                          disabled={pending}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Eliminar rol ${r.nombre}`}
+                          className="rounded-lg p-2 text-brand hover:bg-brand/10"
+                          onClick={() => setConfirmDel(r)}
+                          disabled={pending}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
+                    {r.es_rol_base && <span className="text-xs text-ink/45">—</span>}
                   </td>
                 </tr>
               ))}
@@ -144,6 +166,29 @@ function TabRoles() {
         </div>
       )}
       <RolModal open={modal !== null} id={modal === "new" ? null : modal} onClose={() => setModal(null)} onSaved={() => void cargar()} />
+      <Confirm
+        open={!!confirmDel}
+        title="Eliminar rol"
+        text={MSG_ROLES.eliminarConfirm}
+        yes="Eliminar"
+        danger
+        busy={pending}
+        onNo={() => setConfirmDel(null)}
+        onYes={() =>
+          run(async () => {
+            if (!confirmDel) return
+            const r = await api(`/api/v1/roles-permisos/roles/${confirmDel.id_rol}`, { method: "DELETE" })
+            const msg = await mensajeDe(r)
+            if (!r.ok) {
+              toast(msg || MSG_ROLES.listadoError)
+              return
+            }
+            toast(msg || MSG_ROLES.eliminarOk)
+            setConfirmDel(null)
+            await cargar()
+          })
+        }
+      />
     </>
   )
 }
@@ -247,6 +292,7 @@ function RolModal({ open, id, onClose, onSaved }: { open: boolean; id: number | 
 }
 
 function TabPermisos() {
+  const filtroSelect = `${input} !mt-0 w-auto max-w-[12rem] shrink-0`
   const [items, setItems] = useState<Permiso[]>([])
   const [modulo, setModulo] = useState("")
   const [accion, setAccion] = useState("")
@@ -276,13 +322,13 @@ function TabPermisos() {
   return (
     <>
       <div className="mb-4 flex flex-nowrap items-center gap-3 overflow-x-auto">
-        <select aria-label="Filtro módulo" value={modulo} onChange={(e) => setModulo(e.target.value)} className={`${input} !mt-0 w-48 shrink-0`}>
+        <select aria-label="Filtro módulo" value={modulo} onChange={(e) => setModulo(e.target.value)} className={filtroSelect}>
           <option value="">Todos los módulos</option>
           {catalogos.modulos.map((m) => (
             <option key={m.clave} value={m.clave}>{m.etiqueta}</option>
           ))}
         </select>
-        <select aria-label="Filtro acción" value={accion} onChange={(e) => setAccion(e.target.value)} className={`${input} !mt-0 w-44 shrink-0`}>
+        <select aria-label="Filtro acción" value={accion} onChange={(e) => setAccion(e.target.value)} className={filtroSelect}>
           <option value="">Todas las acciones</option>
           {catalogos.acciones.map((a) => (
             <option key={a} value={a}>{a}</option>
@@ -311,9 +357,15 @@ function TabPermisos() {
                   <td className="px-4 py-3">{p.modulo}</td>
                   <td className="px-4 py-3">{p.accion}</td>
                   <td className="px-4 py-3">{p.estado ? "Activo" : "Inactivo"}</td>
-                  <td className="px-4 py-3">
-                    <button type="button" className={btnGhost} disabled={pending} onClick={() => setModal(p.id_permiso)}>
-                      <Pencil size={16} /> Editar
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      aria-label={`Editar permiso ${p.nombre}`}
+                      className="rounded-lg p-2 text-plum hover:bg-plum-soft"
+                      disabled={pending}
+                      onClick={() => setModal(p.id_permiso)}
+                    >
+                      <Pencil size={16} />
                     </button>
                   </td>
                 </tr>
@@ -423,6 +475,7 @@ function PermisoModal({
 }
 
 function TabMatriz() {
+  const { refrescar } = useAccesos()
   const [params, setParams] = useSearchParams()
   const sub = params.get("matriz") === "usuario" ? "usuario" : "rol"
   const [roles, setRoles] = useState<{ id_rol: number; nombre: string }[]>([])
@@ -478,6 +531,7 @@ function TabMatriz() {
         return
       }
       toast(msg)
+      refrescar()
       void cargarMatriz()
     })
 

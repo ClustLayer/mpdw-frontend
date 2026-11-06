@@ -7,7 +7,7 @@ export function CatalogPage() {
   const location = useLocation()
   const products = getProducts()
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-7xl px-5 pb-8 pt-14 md:px-10">
       <p className="kicker">Catálogo</p>
       <h1 className="mt-2 font-display text-5xl font-extrabold text-plum md:text-6xl">Elige tu color</h1>

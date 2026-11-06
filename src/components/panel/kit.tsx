@@ -62,6 +62,7 @@ export function Confirm({
   onYes,
   onNo,
   yes = "Confirmar",
+  danger,
 }: {
   open: boolean
   title: string
@@ -70,6 +71,7 @@ export function Confirm({
   onYes: () => void
   onNo: () => void
   yes?: string
+  danger?: boolean
 }) {
   return (
     <Modal open={open} onClose={onNo} title={title}>
@@ -78,7 +80,12 @@ export function Confirm({
         <button type="button" onClick={onNo} className={btnGhost}>
           Cancelar
         </button>
-        <button type="button" onClick={onYes} disabled={busy} className={btnPrimary}>
+        <button
+          type="button"
+          onClick={onYes}
+          disabled={busy}
+          className={danger ? `${btn} bg-brand text-white hover:opacity-90` : btnPrimary}
+        >
           {busy && <Loader2 size={16} className="animate-spin" aria-hidden />} {yes}
         </button>
       </div>
