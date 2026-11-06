@@ -13,3 +13,9 @@ La compilacion y las pruebas de reglas de pantalla pasaron. El recorrido manual 
 **Status:** VERIFIED (cliente + contrato)
 
 El frontend consume `/api/v1/usuarios/*` y `PATCH /api/v1/auth/profile` mostrando los `mensaje` del backend. Filtros con debounce de 300 ms. Confirmaciones de rol, estado y contraseña temporal alineadas con HU 98.
+
+## Epica 3
+**Date:** 2026-11-05  
+**Status:** VERIFIED (cliente + contrato)
+
+Consumo de `/api/v1/roles-permisos/*` y `/api/v1/auth/accesos-panel`. Mensajes de error y exito sin reformular. Toasts accesibles (`role="status"`).

@@ -19,6 +19,7 @@
 
 ### Epica 2 — Usuarios y perfil
 - `src/pages/panel-usuarios-page.tsx` — HU 07–11 (listado, formularios, estado, contraseña temporal)
+- `src/pages/panel-permisos-page.tsx` — HU 13–17; `src/features/accesos/` y `panel-acceso-denegado-page.tsx` — HU 18
 - `src/pages/panel-cuenta-page.tsx` — HU 12
 - `src/features/usuarios/messages.ts` y `logic.ts` — mensajes literales y validacion de formulario
 - `src/components/panel/kit.tsx` — Confirm, Modal ancho, Pager, useDebounced, Badge
