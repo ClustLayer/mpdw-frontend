@@ -7,6 +7,7 @@ import { EnDesarrolloRecuadro } from "../components/ui/en-desarrollo-recuadro"
 import { useAccesos } from "../features/accesos/accesos-provider"
 import { useParams } from "react-router-dom"
 import { PanelAccesoDenegadoPage } from "./panel-acceso-denegado-page"
+import { PanelAuditoriaPage } from "./panel-auditoria-page"
 import { PanelCuentaPage } from "./panel-cuenta-page"
 import { PanelPermisosPage } from "./panel-permisos-page"
 import { PanelSedesPage } from "./panel-sedes-page"
@@ -226,6 +227,7 @@ export function PanelModulePage() {
     return <PanelPermisosPage />
   }
   if (modulo === "sedes" && (puedeModulo("sedes") || accesosError)) return <PanelSedesPage />
+  if (modulo === "auditoria" && (puedeModulo("auditoria") || accesosError)) return <PanelAuditoriaPage />
   if (modulo === "cuenta") return <PanelCuentaPage />
   return (
     <section>
