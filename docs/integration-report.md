@@ -27,3 +27,10 @@ Consumo de `/api/v1/roles-permisos/*` y `/api/v1/auth/accesos-panel`. Mensajes d
 - `DELETE /api/v1/roles-permisos/roles/{id}` integrado en UI con confirmación.
 - Guards front alineados con `acciones_por_modulo` (Sin acceso, Total, alias T/L).
 - Planes QA: `docs/qa-epic-2.md`, `docs/qa-epic-3.md`.
+
+## Cierre Sprint 1 — Épicas 13 y 18 (2026-11-06)
+**Status:** VERIFIED (pipelines locales)
+
+- Bitácora: consumo de `GET /api/v1/auditoria/bitacora/` y `.../usuarios/`; debounce 300 ms en búsqueda de usuario.
+- HU 96–97: diálogos modales accesibles; manejo 403/404/409 según mensajes del backend.
+- QA: `docs/qa-sprint1-closing.md`.

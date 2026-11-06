@@ -1,5 +1,13 @@
 # Changelog
 
+Versionado del portal (major.sprint.epica): **1.1.5** = producto 1, sprint 1, épicas 13 y 18. Entregas previas: **1.1.1** Épica 1, **1.1.2** Épica 2, **1.1.3** Épica 3, **1.1.4** Épica 4.
+
+## 2026-11-06 — v1.1.5 Cierre Sprint 1 (Épica 13 + 18)
+
+- Módulo panel **Auditoría** (`panel-auditoria-page`): filtros, tabla, detalle con diff, mensajes CA y debounce 300 ms en búsqueda de usuario.
+- Comportamientos transversales (HU 96–97): `ConfirmDestructiveDialog` con motivo opcional obligatorio, `ConflictDialog`, mensajes en `features/transversal/messages.ts`; integración en usuarios (409/403).
+- `cuerpoError` en cliente API para mensajes de error estructurados.
+
 ## 2026-11-05 — Deuda tecnica Copilot (Epic 2)
 
 - Listado de usuarios: cancelacion logica de peticiones obsoletas, clamp de pagina y errores de red.

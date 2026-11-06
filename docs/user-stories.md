@@ -45,3 +45,13 @@ La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se mod
 - HU_MPDW_01_21 Consolidado — `GET /api/v1/sedes/consolidado/` (estructura; totales cuando existan datos operativos)
 - HU pública sedes y contacto — `sedes-page.tsx` + `GET /api/v1/branches/`
 - Iteraciones 8–9: matriz por módulo, tooltips, sedes demo — `docs/correcciones-iteracion-8.md`, `docs/correcciones-iteracion-9.md`, `docs/qa-epic-4.md`
+
+## Épica 13 — Auditoría (2026-11-06) — **v1.1.5** — **Status:** COMPLETED
+
+- HU_MPDW_01_82 — `src/pages/panel-auditoria-page.tsx`, ruta en `auth-secondary-pages.tsx` / `pages.tsx`; filtros con debounce 300 ms en búsqueda de usuario; mensajes literales del backend.
+
+## Épica 18 — Comportamientos transversales (2026-11-06) — **v1.1.5** — **Status:** COMPLETED
+
+- HU_MPDW_01_96 — `ConfirmDestructiveDialog` en `components/panel/kit.tsx` (foco atrapado vía `Modal`); motivo máx. 255 cuando aplica; integrado en `panel-usuarios-page.tsx`.
+- HU_MPDW_01_97 — `ConflictDialog`, manejo HTTP 409 y borrador en `sessionStorage` en flujo de edición de usuario.
+- Mensajes transversales — `src/features/transversal/messages.ts`.
