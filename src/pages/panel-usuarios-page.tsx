@@ -124,30 +124,32 @@ export function PanelUsuariosPage() {
   const irEditar = (id: number) => setModal(id)
 
   return (
-    <section>
-      <p className="mb-1 font-mono text-xs uppercase tracking-widest text-cyan-dark">Administración de usuarios</p>
-      <h1 className="font-display text-3xl font-extrabold text-plum">Usuarios</h1>
-      <p className="mt-2 max-w-3xl text-sm text-ink/60">Personal con acceso al sistema. Los usuarios se crean aquí; no hay registro público.</p>
+    <section className="mx-auto max-w-6xl">
+      <header className="mb-6">
+        <p className="font-mono text-xs uppercase tracking-widest text-cyan-dark">Administración de usuarios</p>
+        <h1 className="font-display text-4xl font-extrabold text-plum">Usuarios</h1>
+        <p className="mt-1 max-w-3xl text-sm text-ink/60">Personal con acceso al sistema. Los usuarios se crean aquí; no hay registro público.</p>
+      </header>
 
-      <div className="mb-4 mt-6 flex flex-wrap items-center gap-3">
-        <label className="relative min-w-52 flex-1">
+      <div className="mb-4 flex flex-nowrap items-center gap-3 overflow-x-auto">
+        <label className="relative min-w-[12rem] flex-1">
           <span className="sr-only">Buscar</span>
           <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-plum/50" aria-hidden />
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1) }} placeholder="Buscar usuarios…" className={`${input} !mt-0 pl-10`} />
         </label>
-        <select aria-label="Filtro por rol" value={idRol} onChange={(e) => { setIdRol(e.target.value); setPage(1) }} className={`${input} !mt-0 w-44`}>
+        <select aria-label="Filtro por rol" value={idRol} onChange={(e) => { setIdRol(e.target.value); setPage(1) }} className={`${input} !mt-0 w-44 shrink-0`}>
           <option value="">Todos los roles</option>
           {roles.map((r) => (
             <option key={r.id_rol} value={String(r.id_rol)}>{r.nombre}</option>
           ))}
         </select>
-        <select aria-label="Filtro por estado" value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1) }} className={`${input} !mt-0 w-40`}>
+        <select aria-label="Filtro por estado" value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1) }} className={`${input} !mt-0 w-40 shrink-0`}>
           <option value="todos">Todos</option>
           <option value="activo">Activo</option>
           <option value="inactivo">Inactivo</option>
           <option value="bloqueado">Bloqueado</option>
         </select>
-        <button type="button" className={btnPrimary} onClick={() => setModal("new")}>
+        <button type="button" className={`${btnPrimary} shrink-0`} onClick={() => setModal("new")}>
           <Plus size={16} aria-hidden /> Nuevo usuario
         </button>
       </div>

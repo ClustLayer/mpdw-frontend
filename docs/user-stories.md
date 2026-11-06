@@ -21,3 +21,11 @@ La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se mod
 - HU_MPDW_01_10 Cambiar estado — acciones activar, desactivar, bloquear
 - HU_MPDW_01_11 Contraseña temporal — resultado de un solo uso con copiar
 - HU_MPDW_01_12 Mi perfil — `src/pages/panel-cuenta-page.tsx`
+
+## Epica 3 (2026-11-05) — **Status:** COMPLETED
+
+- HU_MPDW_01_13–14 Roles — pestaña Roles en `src/pages/panel-permisos-page.tsx`
+- HU_MPDW_01_15–16 Catálogo de permisos — misma página, pestaña Catálogo
+- HU_MPDW_01_17 Matriz — pestaña Matriz (rol / usuario)
+- HU_MPDW_01_18 Menú y rutas — `useAccesosPanel`, `PanelAccesoDenegadoPage`, filtro en `shell.tsx`
+- Deuda UI Ep.2 — filtros de usuarios en una fila y cabecera alineada con la demo en `panel-usuarios-page.tsx`

@@ -28,3 +28,15 @@
 ### Evidencia
 - `npm exec pnpm@10.15.0 run calidad`: lint 0 errores, vitest, build y playwright en verde.
 - `src/features/usuarios/logic.test.ts`: validacion de campos obligatorios.
+
+## Epica 3
+**Status:** COMPLETED  
+**Date:** 2026-11-05
+
+### Alcance
+- Modulo Permisos (roles, catalogo, matriz) para administrador.
+- Menu filtrado por `GET /api/v1/auth/accesos-panel`; pantalla acceso denegado.
+- Correccion UI usuarios: filtros en una fila y cabecera tipo demo.
+
+### Evidencia
+- `npx pnpm run calidad`: lint, tsc, vitest, build, e2e en verde.
