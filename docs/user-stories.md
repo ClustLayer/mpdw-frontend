@@ -12,3 +12,12 @@ Las seis historias de la epica 1 quedaron implementadas en este portal el 2026-1
 - HU_MPDW_01_06 Verificacion en dos pasos
 
 La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se modifica.
+
+## Epica 2 (2026-11-05) — **Status:** COMPLETED
+
+- HU_MPDW_01_07 Crear usuario — `src/pages/panel-usuarios-page.tsx`, `src/features/usuarios/`
+- HU_MPDW_01_08 Listado de usuarios — mismos archivos
+- HU_MPDW_01_09 Editar usuario — modal de edicion y confirmacion de cambio de rol
+- HU_MPDW_01_10 Cambiar estado — acciones activar, desactivar, bloquear
+- HU_MPDW_01_11 Contraseña temporal — resultado de un solo uso con copiar
+- HU_MPDW_01_12 Mi perfil — `src/pages/panel-cuenta-page.tsx`

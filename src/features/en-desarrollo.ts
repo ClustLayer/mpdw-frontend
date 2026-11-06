@@ -1,7 +1,7 @@
 export const EN_DESARROLLO = "Funcionalidad en desarrollo"
 
 export function avisoEnDesarrollo() {
-  window.alert(EN_DESARROLLO)
+  toast(EN_DESARROLLO)
 }
 
 let toastTimer = 0
