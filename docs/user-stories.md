@@ -30,7 +30,7 @@ La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se mod
 - HU_MPDW_01_18 Menú y rutas — `useAccesosPanel`, `PanelAccesoDenegadoPage`, filtro en `shell.tsx`
 - Deuda UI Ep.2 — filtros de usuarios en una fila y cabecera alineada con la demo en `panel-usuarios-page.tsx`
 
-### Iteración 7 (ajustes, rama `epica-3-ajustes-y-fixes`)
+### Iteración 7 (ajustes, integrados vía PR épica 3 #3 + rama épica 4)
 
 - Persistencia de sesión al recargar (F5) — `session-storage.ts`, bootstrap en `providers.tsx`
 - Navegación panel — `AccesosProvider` + caché; guards en usuarios y rutas secundarias
@@ -44,4 +44,4 @@ La demo `MundoPinturasDiana-Demo` no forma parte de este repositorio y no se mod
 - HU_MPDW_01_20 Editar / desactivar sede — `PATCH /api/v1/sedes/gestion/{id}/`
 - HU_MPDW_01_21 Consolidado — `GET /api/v1/sedes/consolidado/` (estructura; totales cuando existan datos operativos)
 - HU pública sedes y contacto — `sedes-page.tsx` + `GET /api/v1/branches/`
-- Iteración 8: fixes Copilot épica 3, matriz carriles, permisos demo — `docs/correcciones-iteracion-8.md`, `docs/qa-epic-4.md`
+- Iteraciones 8–9: matriz por módulo, tooltips, sedes demo — `docs/correcciones-iteracion-8.md`, `docs/correcciones-iteracion-9.md`, `docs/qa-epic-4.md`
