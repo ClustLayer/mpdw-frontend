@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom"
-import { ArrowRight, Check, Coffee, ImagePlus } from "lucide-react"
+import { ArrowRight, Check, Coffee } from "lucide-react"
 import { Reveal } from "../components/ui/reveal"
 import { Blob, Squiggle, Star, Sticker } from "../components/ui/splash"
 import { getSiteImages, getSiteSettings } from "../lib/public-data"
+
 
 const team = [
   { n: 'Diana Ivón Cabrera Marín', r: 'Jefe', q: 'Cada color cuenta una historia; yo solo me aseguro de que la tuya se vea tal como la imaginaste.', c: 'bg-brand' },
@@ -14,6 +15,10 @@ const team = [
 export function AboutPage() {
   const s = getSiteSettings()
   const imgs = getSiteImages()
+ //Imagen de diana-team en  el directorio public
+  const imageTeam = '/public/brand/diana-team.jpeg'
+  const imageSticker = '/public/brand/sticker-team.jpeg'
+
   const steps = [
     { t: 'Cerca de 17 años en San Nicolás', d: 'Mundo Pinturas Diana funcionó durante aproximadamente 17 años en la calle 15 #7-79, en el sector de San Nicolás, Cali. Allí se construyó una clientela y una rutina de trabajo diaria.', c: 'bg-plum' },
     { t: '10 de agosto de 2026', d: 'Un terremoto hizo caer una pared colindante sobre la cubierta del local. Las intervenciones posteriores y la lluvia agravaron las afectaciones en mobiliario, exhibidores, pinturas y materias primas.', c: 'bg-brand' },
@@ -90,12 +95,10 @@ export function AboutPage() {
             <div className="relative mx-auto w-full max-w-sm">
               <div className="absolute -inset-3 rotate-3 rounded-[2.5rem] bg-cyan" aria-hidden />
               {/* REEMPLAZABLE: sustituir este recuadro por la imagen real del sticker de los empleados. */}
-              <div data-replaceable="sticker-empleados" className="stripes relative grid aspect-square place-items-center rounded-[2rem] border-2 border-dashed border-plum/50 bg-white p-6 text-center">
-                <div>
-                  <ImagePlus className="mx-auto size-10 text-plum/50" aria-hidden />
-                  <p className="mt-3 font-display text-xl font-bold text-plum">[Sticker de empleados]</p>
-                  <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-plum/60">Espacio reemplazable por la imagen oficial</p>
-                </div>
+              <div className="stripes relative grid aspect-square place-items-center rounded-[2rem] border-2 border-dashed border-plum/50 bg-white p-6 text-center">
+                <div className="absolute inset-0 rounded-full bg-sun/50" />
+                {/* Con borde redondeado medio */}
+                {imageSticker && <img src={imageSticker} alt="Sticker de empleados" className="absolute inset-0 size-full object-cover rounded-4xl" />} 
               </div>
               <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 -rotate-2 whitespace-nowrap rounded-full border-2 border-plum bg-sun px-5 py-2 font-mono text-xs font-medium uppercase tracking-widest text-plum shadow-[4px_4px_0_0_#4A154B]">Sello original caleño</span>
             </div>
@@ -113,7 +116,7 @@ export function AboutPage() {
           </Reveal>
           <Reveal delay={120}>
             <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border-2 border-plum bg-plum-soft">
-              {imgs.team && <img src={imgs.team.url} alt={imgs.team.alt} className="absolute inset-0 size-full object-cover" />}
+              {imgs.team && <img src={imageTeam} alt="Diana Ivón Cabrera Marín" className="absolute inset-0 size-full object-cover" />}
               <Sticker className="absolute bottom-4 left-4 bg-white">Imagen de referencia</Sticker>
             </div>
           </Reveal>

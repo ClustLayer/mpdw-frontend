@@ -76,8 +76,9 @@ export function PanelAuditoriaPage() {
   const [params, setParams] = useSearchParams()
   const [idUsuario, setIdUsuario] = useState(params.get("id_usuario") ?? "")
   const [accion, setAccion] = useState(params.get("accion") ?? "")
-  const [entidad, setEntidad] = useState(params.get("entidad") ?? "")
-  const [idEntidad, setIdEntidad] = useState(params.get("id_entidad") ?? "")
+  const [q, setQ] = useState(params.get("q") ?? "")
+  const debouncedQ = useDebounced(q, 300)
+  const [catalogoAcciones, setCatalogoAcciones] = useState<string[]>([])
   const [fechaDesde, setFechaDesde] = useState(params.get("fecha_desde") ?? "")
   const [fechaHasta, setFechaHasta] = useState(params.get("fecha_hasta") ?? "")
   const [page, setPage] = useState(Number(params.get("page") || 1))
@@ -105,13 +106,12 @@ export function PanelAuditoriaPage() {
     const next = new URLSearchParams()
     if (idUsuario) next.set("id_usuario", idUsuario)
     if (accion.trim()) next.set("accion", accion.trim())
-    if (entidad.trim()) next.set("entidad", entidad.trim())
-    if (idEntidad.trim()) next.set("id_entidad", idEntidad.trim())
+    if (debouncedQ.trim()) next.set("q", debouncedQ.trim())
     if (fechaDesde) next.set("fecha_desde", fechaDesde)
     if (fechaHasta) next.set("fecha_hasta", fechaHasta)
     if (page > 1) next.set("page", String(page))
     setParams(next, { replace: true })
-  }, [idUsuario, accion, entidad, idEntidad, fechaDesde, fechaHasta, page, setParams])
+  }, [idUsuario, accion, debouncedQ, fechaDesde, fechaHasta, page, setParams])
 
   useEffect(() => {
     syncParams()
@@ -145,8 +145,7 @@ export function PanelAuditoriaPage() {
     qs.set("page_size", String(pageSize))
     if (idUsuario) qs.set("id_usuario", idUsuario)
     if (accion.trim()) qs.set("accion", accion.trim())
-    if (entidad.trim()) qs.set("entidad", entidad.trim())
-    if (idEntidad.trim()) qs.set("id_entidad", idEntidad.trim())
+    if (debouncedQ.trim()) qs.set("q", debouncedQ.trim())
     if (fechaDesde) qs.set("fecha_desde", fechaDesde)
     if (fechaHasta) qs.set("fecha_hasta", fechaHasta)
     try {
@@ -171,7 +170,20 @@ export function PanelAuditoriaPage() {
     } finally {
       if (id === seq.current) setCargando(false)
     }
-  }, [page, pageSize, idUsuario, accion, entidad, idEntidad, fechaDesde, fechaHasta])
+  }, [page, pageSize, idUsuario, accion, debouncedQ, fechaDesde, fechaHasta])
+
+  useEffect(() => {
+    if (!puedeConsultar) return
+    const t = window.setTimeout(() => {
+      void (async () => {
+        const r = await api("/api/v1/auditoria/bitacora/acciones/")
+        if (!r.ok) return
+        const data = (await r.json()) as { acciones: string[] }
+        setCatalogoAcciones(data.acciones ?? [])
+      })()
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [puedeConsultar])
 
   useEffect(() => {
     if (!puedeConsultar) return
@@ -252,17 +264,26 @@ export function PanelAuditoriaPage() {
             </ul>
           )}
         </label>
-        <label className="min-w-[8rem] text-sm font-semibold">
+        <label className="min-w-[12rem] flex-1 text-sm font-semibold">
+          Buscar
+          <input
+            value={q}
+            maxLength={100}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Entidad, identificador o usuario"
+            className={input}
+          />
+        </label>
+        <label className="min-w-[10rem] text-sm font-semibold">
           Acción
-          <input value={accion} maxLength={50} onChange={(e) => setAccion(e.target.value)} className={input} />
-        </label>
-        <label className="min-w-[8rem] text-sm font-semibold">
-          Entidad
-          <input value={entidad} maxLength={100} onChange={(e) => setEntidad(e.target.value)} className={input} />
-        </label>
-        <label className="min-w-[6rem] text-sm font-semibold">
-          ID entidad
-          <input value={idEntidad} inputMode="numeric" onChange={(e) => setIdEntidad(e.target.value)} className={input} />
+          <select value={accion} onChange={(e) => setAccion(e.target.value)} className={input} aria-label="Acción">
+            <option value="">Todas</option>
+            {catalogoAcciones.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="min-w-[10rem] text-sm font-semibold">
           Desde
@@ -282,8 +303,7 @@ export function PanelAuditoriaPage() {
             setIdUsuario("")
             setUsuarioText("")
             setAccion("")
-            setEntidad("")
-            setIdEntidad("")
+            setQ("")
             setFechaDesde("")
             setFechaHasta("")
             setPage(1)

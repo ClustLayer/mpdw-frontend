@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
-import { Loader2, Pencil, Plus, Search } from "lucide-react"
+import { Loader2, Pencil, Plus, Power, Search } from "lucide-react"
 import {
+  Confirm,
   DayClosedToggle,
   Empty,
   FieldLabel,
@@ -24,6 +25,7 @@ type Sede = {
   whatsapp: string
   ciudad: string
   estado: boolean
+  es_principal?: boolean
   orden: number
   version_fila: number
   maps_url?: string
@@ -53,6 +55,8 @@ export function PanelSedesPage() {
   const [items, setItems] = useState<Sede[]>([])
   const [total, setTotal] = useState(0)
   const [modal, setModal] = useState<"new" | number | null>(null)
+  const [confirmar, setConfirmar] = useState<Sede | null>(null)
+  const [cambiando, setCambiando] = useState(false)
   const filtroSelect = `${input} !mt-0 w-auto max-w-[12rem] shrink-0`
   const pageSize = 20
 
@@ -68,9 +72,41 @@ export function PanelSedesPage() {
   }, [debouncedQ, estado, page])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga remota
-    void cargar()
+    const t = window.setTimeout(() => {
+      void cargar()
+    }, 0)
+    return () => window.clearTimeout(t)
   }, [cargar])
+
+  const aplicarEstado = async () => {
+    if (!confirmar || cambiando) return
+    setCambiando(true)
+    try {
+      const r = await api(`/api/v1/sedes/gestion/${confirmar.id_sede}/`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          nombre: confirmar.nombre,
+          direccion: confirmar.direccion,
+          telefono: confirmar.telefono,
+          whatsapp: confirmar.whatsapp,
+          ciudad: confirmar.ciudad,
+          orden: confirmar.orden,
+          version_fila: confirmar.version_fila,
+          estado: !confirmar.estado,
+        }),
+      })
+      const msg = await mensajeDe(r)
+      if (!r.ok) {
+        toast(msg || "No fue posible actualizar la sede. Intente nuevamente.")
+        return
+      }
+      toast(msg)
+      setConfirmar(null)
+      await cargar()
+    } finally {
+      setCambiando(false)
+    }
+  }
 
   return (
     <section className="mx-auto max-w-6xl">
@@ -123,6 +159,14 @@ export function PanelSedesPage() {
                     <button type="button" aria-label={`Editar ${s.nombre}`} className="rounded-lg p-2 text-plum hover:bg-plum-soft" onClick={() => setModal(s.id_sede)}>
                       <Pencil size={16} />
                     </button>
+                    <button
+                      type="button"
+                      aria-label={s.estado ? `Desactivar ${s.nombre}` : `Activar ${s.nombre}`}
+                      className="rounded-lg p-2 text-brand hover:bg-brand/10"
+                      onClick={() => setConfirmar(s)}
+                    >
+                      <Power size={16} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -132,6 +176,22 @@ export function PanelSedesPage() {
       )}
       <Pager page={page} total={total} totalPages={Math.max(1, Math.ceil(total / pageSize))} onPage={setPage} />
       <SedeModal open={modal !== null} id={modal === "new" ? null : modal} onClose={() => setModal(null)} onSaved={() => void cargar()} />
+      <Confirm
+        open={confirmar !== null}
+        title={confirmar ? `${confirmar.estado ? "Desactivar" : "Activar"} ${confirmar.nombre}` : "Sede"}
+        text={
+          confirmar?.estado
+            ? "¿Está seguro de que desea desactivar esta sede?"
+            : "¿Está seguro de que desea activar esta sede?"
+        }
+        danger={confirmar?.estado}
+        busy={cambiando}
+        yes={confirmar?.estado ? "Desactivar" : "Activar"}
+        onYes={() => void aplicarEstado()}
+        onNo={() => {
+          if (!cambiando) setConfirmar(null)
+        }}
+      />
     </section>
   )
 }
@@ -144,7 +204,7 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
   const [whatsapp, setWhatsapp] = useState("")
   const [ciudad, setCiudad] = useState("Cali")
   const [orden, setOrden] = useState(10)
-  const [estado, setEstado] = useState(true)
+  const [esPrincipal, setEsPrincipal] = useState(false)
   const [version, setVersion] = useState(1)
   const [horarios, setHorarios] = useState<Horario[]>(horariosVacios)
   const [mapsUrl, setMapsUrl] = useState("")
@@ -161,7 +221,7 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
       setWhatsapp("")
       setCiudad("Cali")
       setOrden(10)
-      setEstado(true)
+      setEsPrincipal(false)
       setHorarios(horariosVacios())
       setMapsUrl("")
       setMapQuery("")
@@ -178,7 +238,7 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
       setWhatsapp(s.whatsapp)
       setCiudad(s.ciudad)
       setOrden(s.orden)
-      setEstado(s.estado)
+      setEsPrincipal(Boolean(s.es_principal))
       setVersion(s.version_fila)
       setHorarios(s.horarios?.length ? s.horarios : horariosVacios())
       setMapsUrl(s.maps_url ?? "")
@@ -198,7 +258,8 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
         maps_url: mapsUrl,
         map_query: mapQuery,
         horarios,
-        ...(isNew ? {} : { estado, version_fila: version }),
+        es_principal: esPrincipal,
+        ...(isNew ? {} : { version_fila: version }),
       }
       const r = await api(isNew ? "/api/v1/sedes/gestion/" : `/api/v1/sedes/gestion/${id}/`, {
         method: isNew ? "POST" : "PATCH",
@@ -244,11 +305,9 @@ function SedeModal({ open, id, onClose, onSaved }: { open: boolean; id: number |
       <FieldLabel label="Orden en el sitio" tip="Prioridad en la página Sedes y contacto (menor = primero)">
         <input type="number" value={orden} onChange={(e) => setOrden(Number(e.target.value))} className={input} />
       </FieldLabel>
-      {!isNew && (
-        <label className="mt-3 flex items-center gap-2 text-sm font-semibold" data-tip="Las sedes inactivas no aparecen en el sitio público">
-          <input type="checkbox" checked={estado} onChange={(e) => setEstado(e.target.checked)} /> Sede activa
-        </label>
-      )}
+      <label className="mt-3 flex items-center gap-2 text-sm font-semibold" data-tip="Solo una sede puede ser la principal del sitio público">
+        <input type="checkbox" checked={esPrincipal} onChange={(e) => setEsPrincipal(e.target.checked)} /> Sede principal
+      </label>
       <fieldset className="mt-4 rounded-xl border-2 border-plum/10 p-4">
         <legend className="px-2 text-sm font-bold text-plum">Horarios por día</legend>
         <div className="space-y-3">

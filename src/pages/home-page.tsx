@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowRight, MessageCircle, Palette, ShoppingBag, Send, MapPin, Brush, Building2, Droplets, Layers, Paintbrush, Sun } from "lucide-react"
 import { getBestSellerIds, getBranches, getProducts, getPromotions, getPublicEvents, getSiteImages, getSiteSettings, serverToday, type PublicProduct } from "../lib/public-data"
@@ -5,6 +6,7 @@ import { Reveal } from "../components/ui/reveal"
 import { Blob, BrushUnderline, Squiggle, Star, Sticker } from "../components/ui/splash"
 import { ProductCard } from "../components/product-card"
 import { waLink } from "../lib/format"
+import { digitos, fetchSedesPublicas, mapsDeSede, sedePrincipal, type SedePublica } from "../lib/sede-publica"
 import { ProductCarousel } from "../components/site/product-carousel"
 import { PromotionsSection } from "../components/site/promotions-section"
 import { EventsSection } from "../components/site/events-section"
@@ -14,7 +16,19 @@ export function HomePage() {
   const products = getProducts()
   const settings = getSiteSettings()
   const branches = getBranches()
+  const [principal, setPrincipal] = useState<SedePublica | null>(null)
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      void fetchSedesPublicas().then((list) => setPrincipal(sedePrincipal(list)))
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [])
+  const visitaCiudad = principal?.ciudad || "Cali"
+  const visitaDireccion = principal?.direccion || branches[0]?.address || settings.address
+  const visitaWa = digitos(principal?.whatsapp || principal?.telefono || settings.whatsapp)
+  const visitaMaps = principal ? mapsDeSede(principal) : "/sedes"
   const imgs = getSiteImages()
+  const imageMural = '/public/brand/pintando-ciudad.jpeg'
   const bestIds = getBestSellerIds()
   const promotions = getPromotions()
   const events = getPublicEvents()
@@ -74,7 +88,7 @@ export function HomePage() {
             <div className="absolute -inset-3 rotate-3 rounded-[2.5rem] bg-cyan" aria-hidden />
             <div className="absolute -inset-3 -rotate-2 rounded-[2.5rem] border-2 border-dashed border-plum/40" aria-hidden />
             <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-plum-soft">
-              {imgs.hero && <img src={imgs.hero.url} alt={imgs.hero.alt} className="absolute inset-0 size-full object-cover" />}
+              {imageMural && <img src={imageMural} alt="Mural de referencia" className="absolute inset-0 size-full object-cover" />}
             </div>
             <div className="absolute -bottom-7 -left-6 grid size-28 rotate-[-8deg] place-items-center rounded-full border-4 border-white bg-white shadow-xl animate-float">
               <img src="/brand/logo.png" alt="Logo Mundo Pinturas Diana" width={96} height={96} className="size-24 rounded-full object-cover" />
@@ -200,12 +214,12 @@ export function HomePage() {
             <Blob className="absolute -bottom-24 left-1/3 size-72 opacity-25" color="#00ACC1" />
             <div className="relative grid items-center gap-8 md:grid-cols-[1.4fr_1fr]">
               <div>
-                <h2 className="font-display text-4xl font-extrabold md:text-5xl">Visítanos en Cali</h2>
-                <p className="mt-4 flex items-start gap-3 text-lg text-white/85"><MapPin className="mt-1 size-5 shrink-0 text-[#69E8FE]" aria-hidden />{branches[0]?.address ?? settings.address}</p>
+                <h2 className="font-display text-4xl font-extrabold md:text-5xl">Visítanos en {visitaCiudad}</h2>
+                <p className="mt-4 flex items-start gap-3 text-lg text-white/85"><MapPin className="mt-1 size-5 shrink-0 text-[#69E8FE]" aria-hidden />{visitaDireccion}</p>
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
-                <Link to="/sedes" className="rounded-full bg-white px-6 py-3.5 font-bold text-plum transition hover:bg-[#69E8FE]">Cómo llegar</Link>
-                <a href={waLink(settings.whatsapp, 'Hola, quisiera hacer un pedido.')} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#1FA855] px-6 py-3.5 font-bold text-white transition hover:brightness-110"><MessageCircle className="size-5" aria-hidden />WhatsApp</a>
+                <a href={visitaMaps} target="_blank" rel="noopener noreferrer" className="rounded-full bg-white px-6 py-3.5 font-bold text-plum transition hover:bg-[#69E8FE]">Cómo llegar</a>
+                <a href={waLink(visitaWa, 'Hola, quisiera hacer un pedido.')} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#1FA855] px-6 py-3.5 font-bold text-white transition hover:brightness-110"><MessageCircle className="size-5" aria-hidden />WhatsApp</a>
               </div>
             </div>
           </div>
