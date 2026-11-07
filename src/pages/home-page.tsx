@@ -28,7 +28,7 @@ export function HomePage() {
   const visitaWa = digitos(principal?.whatsapp || principal?.telefono || settings.whatsapp)
   const visitaMaps = principal ? mapsDeSede(principal) : "/sedes"
   const imgs = getSiteImages()
-  const imageMural = '/public/brand/pintando-ciudad.jpeg'
+  const imageMural = '/brand/pintando-ciudad.jpeg'
   const bestIds = getBestSellerIds()
   const promotions = getPromotions()
   const events = getPublicEvents()
@@ -194,7 +194,7 @@ export function HomePage() {
           <div className="relative">
             <div className="absolute -inset-3 -rotate-3 rounded-[2rem] bg-brand/90" aria-hidden />
             <div className="relative aspect-[5/4] overflow-hidden rounded-[1.75rem] bg-plum-soft">
-              {imgs.mural && <img src={imgs.mural.url} alt={imgs.mural.alt} className="absolute inset-0 size-full object-cover" />}
+              <img src={imageMural} alt={imgs.mural?.alt ?? 'Mural artístico con color'} className="absolute inset-0 size-full object-cover" />
             </div>
             <Sticker className="absolute -bottom-4 right-4 rotate-3 bg-white">Imagen de referencia</Sticker>
           </div>
