@@ -24,5 +24,7 @@
 - `src/pages/panel-permisos-page.tsx` — HU 13–17; `src/features/accesos/` y `panel-acceso-denegado-page.tsx` — HU 18
 - `src/pages/panel-cuenta-page.tsx` — HU 12
 - `src/features/usuarios/messages.ts` y `logic.ts` — mensajes literales y validacion de formulario
-- `src/components/panel/kit.tsx` — Confirm, Modal ancho, Pager, useDebounced, Badge
-- Rutas en `auth-secondary-pages.tsx`: segmentos `usuarios` (admin) y `cuenta`
+- `src/components/panel/kit.tsx` — Confirm, `ConfirmDestructiveDialog`, `ConflictDialog`, Modal con foco atrapado opcional, Pager, useDebounced, Badge
+- `src/pages/panel-auditoria-page.tsx` — HU 82 (bitácora, filtros, detalle)
+- `src/features/transversal/messages.ts` — textos HU 96–97 / auditoría
+- Rutas en `auth-secondary-pages.tsx`: segmentos `usuarios`, `auditoria` (admin/gerente con permiso), `cuenta`

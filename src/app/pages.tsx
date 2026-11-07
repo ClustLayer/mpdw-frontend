@@ -14,3 +14,4 @@ export {
   PanelModulePage,
   NoEncontrada,
 } from "../pages/auth-secondary-pages"
+export { PanelAuditoriaPage } from "../pages/panel-auditoria-page"

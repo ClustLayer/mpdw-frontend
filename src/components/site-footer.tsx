@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { MapPin, Phone, MessageCircle } from 'lucide-react'
 import type { SiteSettingsData } from "../lib/public-data"
+import { digitos, fetchSedesPublicas, sedePrincipal } from "../lib/sede-publica"
 
 const Ig = (p: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" /></svg>
@@ -13,12 +15,33 @@ const Tt = (p: React.SVGProps<SVGSVGElement>) => (
 )
 
 export function SiteFooter({ settings }: { settings: SiteSettingsData }) {
+  const [contacto, setContacto] = useState({
+    address: settings.address,
+    phone: settings.whatsapp,
+    whatsapp: settings.whatsapp,
+  })
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      void fetchSedesPublicas().then((list) => {
+        const principal = sedePrincipal(list)
+        if (!principal) return
+        const tel = digitos(principal.telefono || principal.whatsapp)
+        const wa = digitos(principal.whatsapp || principal.telefono)
+        setContacto({
+          address: principal.direccion,
+          phone: tel || wa,
+          whatsapp: wa || tel,
+        })
+      })
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [])
   const socials = [
     { label: 'Instagram', url: settings.instagram, Icon: Ig },
     { label: 'Facebook', url: settings.facebook, Icon: Fb },
     { label: 'TikTok', url: settings.tiktok, Icon: Tt },
   ]
-  const pretty = settings.whatsapp.replace(/^57(\d{3})(\d{3})(\d{4})$/, '+57 $1 $2 $3')
+  const pretty = contacto.phone.replace(/^57(\d{3})(\d{3})(\d{4})$/, '+57 $1 $2 $3')
   return (
     <footer className="relative mt-24 overflow-hidden bg-plum text-white">
       <div className="h-1.5 w-full bg-[linear-gradient(90deg,#E11D74_0_50%,#00ACC1_50%)]" aria-hidden />
@@ -60,9 +83,9 @@ export function SiteFooter({ settings }: { settings: SiteSettingsData }) {
         <div>
           <p className="font-mono text-xs uppercase tracking-widest text-[#69E8FE]">Contacto</p>
           <ul className="mt-4 space-y-3 text-[15px] text-white/85">
-            <li className="flex gap-3"><MapPin className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden />{settings.address}</li>
-            <li className="flex gap-3"><Phone className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden /><a href={`tel:+${settings.whatsapp}`} className="hover:underline">{pretty}</a></li>
-            <li className="flex gap-3"><MessageCircle className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden /><a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noopener noreferrer" className="hover:underline">WhatsApp</a></li>
+            <li className="flex gap-3"><MapPin className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden />{contacto.address}</li>
+            <li className="flex gap-3"><Phone className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden /><a href={`tel:+${contacto.phone}`} className="hover:underline">{pretty}</a></li>
+            <li className="flex gap-3"><MessageCircle className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden /><a href={`https://wa.me/${contacto.whatsapp}`} target="_blank" rel="noopener noreferrer" className="hover:underline">WhatsApp</a></li>
           </ul>
         </div>
       </div>

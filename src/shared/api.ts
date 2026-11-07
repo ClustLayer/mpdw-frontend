@@ -31,13 +31,19 @@ export async function api(path: string, opciones: RequestInit = {}, reintentar =
   return respuesta
 }
 
-export async function mensajeDe(respuesta: Response): Promise<string> {
+export type ErrorApi = { codigo?: string; mensaje?: string }
+
+export async function cuerpoError(respuesta: Response): Promise<ErrorApi> {
   try {
-    const data = (await respuesta.json()) as { mensaje?: string }
-    return data.mensaje ?? ""
+    return (await respuesta.json()) as ErrorApi
   } catch {
-    return ""
+    return {}
   }
+}
+
+export async function mensajeDe(respuesta: Response): Promise<string> {
+  const data = await cuerpoError(respuesta)
+  return data.mensaje ?? ""
 }
 
 export async function renovarUnaVez(): Promise<boolean> {

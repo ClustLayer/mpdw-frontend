@@ -54,3 +54,16 @@
 
 ### Evidencia
 - `npx pnpm run calidad`: lint, tsc, vitest, build, e2e en verde.
+
+## Cierre Sprint 1 — Épicas 13 y 18 (v1.1.5)
+**Status:** COMPLETED  
+**Date:** 2026-11-06  
+**Branch:** `epica-13-18-cierre-sprint1`
+
+### Alcance
+- **Épica 13:** pantalla `panel-auditoria-page.tsx` consumiendo `/api/v1/auditoria/bitacora/` y opciones de usuario; filtros en URL; mensajes y estados CA.
+- **Épica 18:** `ConfirmDestructiveDialog` y `ConflictDialog` en `kit.tsx`; mensajes `features/transversal/messages.ts`; flujos en `panel-usuarios-page.tsx` con `cuerpoError` en `shared/api.ts`.
+
+### Evidencia
+- `pnpm run calidad` (o `npx pnpm@10.15.0 run calidad`): lint sin errores, tsc, vitest, build, Playwright.
+- Primera instalación de navegadores: `npx playwright install chromium`.
