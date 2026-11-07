@@ -15,9 +15,8 @@ const team = [
 export function AboutPage() {
   const s = getSiteSettings()
   const imgs = getSiteImages()
- //Imagen de diana-team en  el directorio public
-  const imageTeam = '/public/brand/diana-team.jpeg'
-  const imageSticker = '/public/brand/sticker-team.jpeg'
+  const imageTeam = '/brand/diana-team.jpeg'
+  const imageSticker = '/brand/sticker-team.jpeg'
 
   const steps = [
     { t: 'Cerca de 17 años en San Nicolás', d: 'Mundo Pinturas Diana funcionó durante aproximadamente 17 años en la calle 15 #7-79, en el sector de San Nicolás, Cali. Allí se construyó una clientela y una rutina de trabajo diaria.', c: 'bg-plum' },
@@ -94,11 +93,8 @@ export function AboutPage() {
           <Reveal delay={120}>
             <div className="relative mx-auto w-full max-w-sm">
               <div className="absolute -inset-3 rotate-3 rounded-[2.5rem] bg-cyan" aria-hidden />
-              {/* REEMPLAZABLE: sustituir este recuadro por la imagen real del sticker de los empleados. */}
-              <div className="stripes relative grid aspect-square place-items-center rounded-[2rem] border-2 border-dashed border-plum/50 bg-white p-6 text-center">
-                <div className="absolute inset-0 rounded-full bg-sun/50" />
-                {/* Con borde redondeado medio */}
-                {imageSticker && <img src={imageSticker} alt="Sticker de empleados" className="absolute inset-0 size-full object-cover rounded-4xl" />} 
+              <div className="relative grid aspect-square place-items-center overflow-hidden rounded-[2rem] border-2 border-plum bg-white">
+                <img src={imageSticker} alt="Sticker de empleados Mundo Pinturas Diana" className="absolute inset-0 size-full object-cover" />
               </div>
               <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 -rotate-2 whitespace-nowrap rounded-full border-2 border-plum bg-sun px-5 py-2 font-mono text-xs font-medium uppercase tracking-widest text-plum shadow-[4px_4px_0_0_#4A154B]">Sello original caleño</span>
             </div>
@@ -116,7 +112,7 @@ export function AboutPage() {
           </Reveal>
           <Reveal delay={120}>
             <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border-2 border-plum bg-plum-soft">
-              {imgs.team && <img src={imageTeam} alt="Diana Ivón Cabrera Marín" className="absolute inset-0 size-full object-cover" />}
+              <img src={imageTeam} alt={imgs.team?.alt ?? 'Diana Ivón Cabrera Marín'} className="absolute inset-0 size-full object-cover" />
               <Sticker className="absolute bottom-4 left-4 bg-white">Imagen de referencia</Sticker>
             </div>
           </Reveal>
